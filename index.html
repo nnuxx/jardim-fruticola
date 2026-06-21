@@ -7,428 +7,122 @@
 <meta name="theme-color" content="#2C4A2E">
 <title>Jardim Frutícola</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap');
+:root {
+  --verde: #2C4A2E; --verde-m: #3D6B40; --verde-c: #7FAF6E;
+  --terra: #C17F3B; --terra-c: #F0DFC0;
+  --creme: #F8F4ED; --fundo: #F2EDE4;
+  --cinza: #6B7280; --branco: #FFFFFF;
+  --vermelho: #C0392B; --laranja: #E67E22; --amarelo: #D97706;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--fundo); color: var(--verde); min-height: 100vh; max-width: 480px; margin: 0 auto; }
 
-  :root {
-    --verde-escuro: #2C4A2E;
-    --verde-medio: #3D6B40;
-    --verde-claro: #7FAF6E;
-    --terra: #C17F3B;
-    --terra-claro: #F0DFC0;
-    --creme: #F8F4ED;
-    --cinza: #6B7280;
-    --branco: #FFFFFF;
-    --vermelho: #C0392B;
-    --laranja: #E67E22;
-    --amarelo: #F1C40F;
-    --fundo: #F2EDE4;
-  }
+header { background: var(--verde); color: #fff; padding: 16px 20px 12px; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 12px; }
+header h1 { font-family: 'DM Serif Display', serif; font-size: 18px; font-weight: 400; flex: 1; }
+.back-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 4px; display: none; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+.tabs { display: flex; background: var(--verde); padding: 0 20px 12px; gap: 8px; }
+.tab { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+.tab.active { background: var(--terra); }
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--fundo);
-    color: var(--verde-escuro);
-    min-height: 100vh;
-    max-width: 480px;
-    margin: 0 auto;
-  }
+.view { display: none; padding: 16px 16px 80px; }
+.view.active { display: block; }
 
-  /* HEADER */
-  header {
-    background: var(--verde-escuro);
-    color: var(--branco);
-    padding: 16px 20px 12px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  header h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 18px;
-    font-weight: 400;
-    flex: 1;
-  }
-  .back-btn {
-    background: none;
-    border: none;
-    color: var(--branco);
-    font-size: 22px;
-    cursor: pointer;
-    padding: 4px;
-    display: none;
-  }
+/* CARDS */
+.arvore-card { background: var(--branco); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 4px solid transparent; transition: transform 0.1s; }
+.arvore-card:active { transform: scale(0.98); }
+.arvore-card.critico { border-left-color: var(--vermelho); }
+.arvore-card.urgente { border-left-color: var(--laranja); }
+.arvore-card.medio { border-left-color: var(--amarelo); }
+.arvore-card.baixo { border-left-color: var(--verde-c); }
+.arvore-emoji { font-size: 28px; width: 36px; text-align: center; }
+.arvore-info { flex: 1; }
+.arvore-nome { font-weight: 600; font-size: 15px; }
+.arvore-sub { font-size: 12px; color: var(--cinza); margin-top: 2px; }
+.badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 10px; white-space: nowrap; }
+.badge.critico { background: #FEE2E2; color: var(--vermelho); }
+.badge.urgente { background: #FEF3C7; color: #92400E; }
+.badge.medio { background: #FEF9C3; color: #713F12; }
+.badge.baixo { background: #DCFCE7; color: #166534; }
 
-  /* NAV TABS */
-  .tabs {
-    display: flex;
-    background: var(--verde-escuro);
-    padding: 0 20px 12px;
-    gap: 8px;
-  }
-  .tab {
-    background: rgba(255,255,255,0.15);
-    color: var(--branco);
-    border: none;
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .tab.active {
-    background: var(--terra);
-    color: var(--branco);
-  }
+/* FILTROS */
+.filtros { display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.filtro-btn { background: var(--branco); border: 1.5px solid #E5E7EB; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-family: 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; color: var(--verde); }
+.filtro-btn.active { background: var(--verde); color: #fff; border-color: var(--verde); }
 
-  /* VIEWS */
-  .view { display: none; padding: 16px 16px 80px; }
-  .view.active { display: block; }
+/* DETALHE */
+.arvore-header { background: var(--verde); color: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; display: flex; gap: 16px; }
+.ah-emoji { font-size: 48px; }
+.ah-info h2 { font-family: 'DM Serif Display', serif; font-size: 22px; font-weight: 400; }
+.ah-info p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+.ah-chips { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.chip { background: rgba(255,255,255,0.2); border-radius: 20px; padding: 3px 10px; font-size: 11px; }
 
-  /* DASHBOARD - lista de árvores */
-  .arvore-card {
-    background: var(--branco);
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    transition: transform 0.1s;
-    border-left: 4px solid transparent;
-  }
-  .arvore-card:active { transform: scale(0.98); }
-  .arvore-card.critico { border-left-color: var(--vermelho); }
-  .arvore-card.urgente { border-left-color: var(--laranja); }
-  .arvore-card.medio { border-left-color: var(--amarelo); }
-  .arvore-card.baixo { border-left-color: var(--verde-claro); }
+.sec-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cinza); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 
-  .arvore-emoji { font-size: 28px; width: 36px; text-align: center; }
-  .arvore-info { flex: 1; }
-  .arvore-nome { font-weight: 600; font-size: 15px; }
-  .arvore-sub { font-size: 12px; color: var(--cinza); margin-top: 2px; }
-  .urgencia-badge {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 10px;
-    white-space: nowrap;
-  }
-  .badge-critico { background: #FEE2E2; color: var(--vermelho); }
-  .badge-urgente { background: #FEF3C7; color: #92400E; }
-  .badge-medio { background: #FEF9C3; color: #713F12; }
-  .badge-baixo { background: #DCFCE7; color: #166534; }
+/* REGISTOS */
+.reg-card { background: var(--branco); border-radius: 12px; margin-bottom: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+.reg-head { padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.reg-head.open { border-bottom: 1px solid #F3F4F6; }
+.reg-data { font-size: 12px; font-weight: 600; color: var(--terra); }
+.reg-titulo { font-size: 14px; font-weight: 500; margin-top: 2px; }
+.reg-chev { color: var(--cinza); font-size: 16px; transition: transform 0.2s; }
+.reg-chev.open { transform: rotate(180deg); }
+.reg-body { display: none; padding: 14px; }
+.reg-body.open { display: block; }
 
-  /* FILTROS */
-  .filtros {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: none;
-  }
-  .filtro-btn {
-    background: var(--branco);
-    border: 1.5px solid #E5E7EB;
-    border-radius: 20px;
-    padding: 5px 12px;
-    font-size: 12px;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer;
-    white-space: nowrap;
-    color: var(--verde-escuro);
-  }
-  .filtro-btn.active {
-    background: var(--verde-escuro);
-    color: var(--branco);
-    border-color: var(--verde-escuro);
-  }
+/* FOTOS */
+.fotos-row { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 4px; scrollbar-width: none; }
+.foto-thumb { width: 100px; height: 100px; border-radius: 8px; object-fit: cover; flex-shrink: 0; cursor: pointer; background: #F3F4F6; }
 
-  /* DETALHE ÁRVORE */
-  .arvore-header {
-    background: var(--verde-escuro);
-    color: var(--branco);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
-  }
-  .arvore-header-emoji { font-size: 48px; }
-  .arvore-header-info h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    font-weight: 400;
-  }
-  .arvore-header-info p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
-  .arvore-meta {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-  }
-  .meta-chip {
-    background: rgba(255,255,255,0.2);
-    border-radius: 20px;
-    padding: 3px 10px;
-    font-size: 11px;
-  }
+.reg-sec { margin-bottom: 12px; }
+.reg-sec-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--cinza); margin-bottom: 4px; }
+.reg-sec-text { font-size: 14px; line-height: 1.55; }
 
-  /* REGISTOS */
-  .section-title {
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--cinza);
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+/* BOTÕES */
+.btn-novo { background: var(--terra); color: #fff; border: none; border-radius: 10px; padding: 12px 16px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; display: flex; align-items: center; gap: 6px; width: 100%; justify-content: center; margin-top: 12px; }
+.btn-fotos { background: var(--verde-m); color: #fff; border: none; border-radius: 10px; padding: 10px 14px; font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 4px; width: 100%; }
 
-  .registo-card {
-    background: var(--branco);
-    border-radius: 12px;
-    margin-bottom: 10px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
-  }
-  .registo-header {
-    padding: 12px 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    border-bottom: 1px solid transparent;
-  }
-  .registo-header.open { border-bottom-color: #F3F4F6; }
-  .registo-data {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--terra);
-  }
-  .registo-titulo { font-size: 14px; font-weight: 500; margin-top: 2px; }
-  .registo-chevron { color: var(--cinza); font-size: 16px; transition: transform 0.2s; }
-  .registo-chevron.open { transform: rotate(180deg); }
+/* MODAL */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; }
+.overlay.open { display: flex; }
+.modal { background: #fff; border-radius: 20px 20px 0 0; padding: 20px; width: 100%; max-height: 88vh; overflow-y: auto; }
+.modal-title { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 16px; }
+.fgrp { margin-bottom: 14px; }
+.flabel { font-size: 12px; font-weight: 600; color: var(--cinza); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.06em; }
+.finput, .ftarea, .fselect { width: 100%; border: 1.5px solid #E5E7EB; border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--verde); background: #fff; }
+.ftarea { min-height: 80px; resize: vertical; }
+.finput:focus, .ftarea:focus, .fselect:focus { outline: none; border-color: var(--verde-m); }
+.modal-btns { display: flex; gap: 10px; margin-top: 16px; }
+.btn-cancel { flex: 1; background: #F3F4F6; color: var(--cinza); border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+.btn-save { flex: 2; background: var(--verde); color: #fff; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; }
 
-  .registo-body { display: none; padding: 14px; }
-  .registo-body.open { display: block; }
+/* FOTOS MODAL */
+.fotos-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.foto-preview-thumb { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; }
+input[type="file"] { display: none; }
 
-  .registo-fotos {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    margin-bottom: 12px;
-    padding-bottom: 4px;
-    scrollbar-width: none;
-  }
-  .registo-foto {
-    width: 100px;
-    height: 100px;
-    border-radius: 8px;
-    object-fit: cover;
-    flex-shrink: 0;
-    cursor: pointer;
-    background: #F3F4F6;
-  }
-  .add-foto-btn {
-    width: 100px;
-    height: 100px;
-    border-radius: 8px;
-    border: 2px dashed #D1D5DB;
-    background: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    font-size: 11px;
-    color: var(--cinza);
-    cursor: pointer;
-    flex-shrink: 0;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .add-foto-btn span { font-size: 24px; }
+/* LIGHTBOX */
+.lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 300; align-items: center; justify-content: center; }
+.lightbox.open { display: flex; }
+.lightbox img { max-width: 100%; max-height: 90vh; object-fit: contain; }
+.lb-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; }
 
-  .registo-secao { margin-bottom: 12px; }
-  .registo-secao-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--cinza);
-    margin-bottom: 4px;
-  }
-  .registo-secao-texto {
-    font-size: 14px;
-    line-height: 1.5;
-    color: var(--verde-escuro);
-  }
-  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-  .tag {
-    background: var(--terra-claro);
-    color: #7C4A00;
-    border-radius: 20px;
-    padding: 3px 10px;
-    font-size: 12px;
-  }
-  .tag.vermelho { background: #FEE2E2; color: var(--vermelho); }
-  .tag.verde { background: #DCFCE7; color: #166534; }
+/* BOTTOM NAV */
+.bnav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #fff; border-top: 1px solid #E5E7EB; display: flex; padding: 8px 0 16px; }
+.nbtn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 10px; color: var(--cinza); padding: 4px; }
+.nbtn.active { color: var(--verde); font-weight: 600; }
+.nbtn span { font-size: 22px; }
 
-  /* BOTÃO NOVO REGISTO */
-  .btn-novo {
-    background: var(--terra);
-    color: var(--branco);
-    border: none;
-    border-radius: 10px;
-    padding: 10px 16px;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    width: 100%;
-    justify-content: center;
-    margin-top: 4px;
-  }
+/* LOADING / EMPTY */
+.loading { text-align: center; padding: 40px; color: var(--cinza); font-size: 14px; }
+.empty { text-align: center; padding: 40px 20px; color: var(--cinza); }
+.empty .eico { font-size: 48px; margin-bottom: 12px; }
 
-  /* MODAL NOVO REGISTO */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 200;
-    align-items: flex-end;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--branco);
-    border-radius: 20px 20px 0 0;
-    padding: 20px;
-    width: 100%;
-    max-height: 85vh;
-    overflow-y: auto;
-  }
-  .modal-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 20px;
-    margin-bottom: 16px;
-  }
-  .form-group { margin-bottom: 14px; }
-  .form-label { font-size: 12px; font-weight: 600; color: var(--cinza); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.06em; }
-  .form-input, .form-textarea, .form-select {
-    width: 100%;
-    border: 1.5px solid #E5E7EB;
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 14px;
-    font-family: 'DM Sans', sans-serif;
-    color: var(--verde-escuro);
-    background: var(--branco);
-  }
-  .form-textarea { min-height: 80px; resize: vertical; }
-  .form-input:focus, .form-textarea:focus, .form-select:focus {
-    outline: none;
-    border-color: var(--verde-medio);
-  }
-  .modal-btns { display: flex; gap: 10px; margin-top: 16px; }
-  .btn-cancel {
-    flex: 1;
-    background: #F3F4F6;
-    color: var(--cinza);
-    border: none;
-    border-radius: 10px;
-    padding: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer;
-  }
-  .btn-save {
-    flex: 2;
-    background: var(--verde-escuro);
-    color: var(--branco);
-    border: none;
-    border-radius: 10px;
-    padding: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer;
-  }
-
-  /* LIGHTBOX */
-  .lightbox {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.95);
-    z-index: 300;
-    align-items: center;
-    justify-content: center;
-  }
-  .lightbox.open { display: flex; }
-  .lightbox img { max-width: 100%; max-height: 90vh; object-fit: contain; }
-  .lightbox-close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: none;
-    border: none;
-    color: white;
-    font-size: 28px;
-    cursor: pointer;
-  }
-
-  /* BOTTOM NAV */
-  .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 480px;
-    background: var(--branco);
-    border-top: 1px solid #E5E7EB;
-    display: flex;
-    padding: 8px 0 16px;
-  }
-  .nav-btn {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 10px;
-    color: var(--cinza);
-    padding: 4px;
-  }
-  .nav-btn.active { color: var(--verde-escuro); }
-  .nav-btn span { font-size: 22px; }
-
-  /* EMPTY STATE */
-  .empty { text-align: center; padding: 40px 20px; color: var(--cinza); }
-  .empty .emoji { font-size: 48px; margin-bottom: 12px; }
-  .empty p { font-size: 14px; }
-
-  input[type="file"] { display: none; }
+/* INSTRUCOES FOTOS */
+.info-box { background: #EFF6FF; border-radius: 10px; padding: 12px 14px; margin-top: 8px; font-size: 13px; color: #1D4ED8; line-height: 1.5; }
+.info-box strong { display: block; margin-bottom: 4px; }
 </style>
 </head>
 <body>
@@ -438,66 +132,62 @@
   <h1 id="headerTitle">🌿 Jardim Frutícola</h1>
 </header>
 
-<!-- DASHBOARD VIEW -->
 <div class="view active" id="viewDashboard">
-  <div style="padding: 16px 0 0;">
-    <div class="filtros" id="filtros">
-      <button class="filtro-btn active" onclick="filtrar('todos', this)">Todas</button>
-      <button class="filtro-btn" onclick="filtrar('critico', this)">🚨 Crítico</button>
-      <button class="filtro-btn" onclick="filtrar('urgente', this)">🔴 Urgente</button>
-      <button class="filtro-btn" onclick="filtrar('medio', this)">🟡 Médio</button>
-      <button class="filtro-btn" onclick="filtrar('baixo', this)">🟢 OK</button>
+  <div style="padding-top:16px">
+    <div class="filtros">
+      <button class="filtro-btn active" onclick="filtrar('todos',this)">Todas</button>
+      <button class="filtro-btn" onclick="filtrar('critico',this)">🚨 Crítico</button>
+      <button class="filtro-btn" onclick="filtrar('urgente',this)">🔴 Urgente</button>
+      <button class="filtro-btn" onclick="filtrar('medio',this)">🟡 Médio</button>
+      <button class="filtro-btn" onclick="filtrar('baixo',this)">🟢 OK</button>
     </div>
-    <div id="listaArvores"></div>
+    <div id="listaArvores"><div class="loading">A carregar...</div></div>
   </div>
 </div>
 
-<!-- DETALHE VIEW -->
 <div class="view" id="viewDetalhe">
   <div id="detalheConteudo"></div>
 </div>
 
-<div class="bottom-nav">
-  <button class="nav-btn active" id="navDashboard" onclick="mostrarView('dashboard')">
-    <span>🌳</span>Árvores
-  </button>
-  <button class="nav-btn" id="navNotas" onclick="mostrarView('notas')">
-    <span>📋</span>Notas
-  </button>
+<div class="bnav">
+  <button class="nbtn active" id="navD" onclick="voltarDashboard()"><span>🌳</span>Árvores</button>
+  <button class="nbtn" id="navI" onclick="mostrarInfo()"><span>ℹ️</span>Ajuda</button>
 </div>
 
 <!-- MODAL NOVO REGISTO -->
-<div class="modal-overlay" id="modalOverlay">
+<div class="overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-title">Novo Registo</div>
-    <div class="form-group">
-      <label class="form-label">Data</label>
-      <input type="date" class="form-input" id="novoData">
+    <div class="fgrp">
+      <label class="flabel">Data</label>
+      <input type="date" class="finput" id="novoData">
     </div>
-    <div class="form-group">
-      <label class="form-label">Diagnóstico</label>
-      <textarea class="form-textarea" id="novoDiagnostico" placeholder="Sintomas observados e diagnóstico..."></textarea>
+    <div class="fgrp">
+      <label class="flabel">Diagnóstico</label>
+      <textarea class="ftarea" id="novoDiag" placeholder="Sintomas observados e diagnóstico..."></textarea>
     </div>
-    <div class="form-group">
-      <label class="form-label">Tratamento Aplicado</label>
-      <textarea class="form-textarea" id="novoTratamento" placeholder="Produtos usados, doses, método..."></textarea>
+    <div class="fgrp">
+      <label class="flabel">Tratamento Aplicado</label>
+      <textarea class="ftarea" id="novoTrat" placeholder="Produtos usados, doses, método..."></textarea>
     </div>
-    <div class="form-group">
-      <label class="form-label">Urgência</label>
-      <select class="form-select" id="novaUrgencia">
+    <div class="fgrp">
+      <label class="flabel">Urgência</label>
+      <select class="fselect" id="novaUrg">
         <option value="baixo">🟢 OK / Baixa</option>
-        <option value="medio">🟡 Média</option>
+        <option value="medio" selected>🟡 Média</option>
         <option value="urgente">🔴 Urgente</option>
         <option value="critico">🚨 Crítico</option>
       </select>
     </div>
-    <div class="form-group">
-      <label class="form-label">Fotos</label>
-      <div id="fotosPreview" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;"></div>
-      <button class="btn-novo" style="background:var(--verde-medio);" onclick="document.getElementById('fileInput').click()">
-        📷 Adicionar Fotos
-      </button>
-      <input type="file" id="fileInput" multiple accept="image/*" onchange="adicionarFotos(this)">
+    <div class="fgrp">
+      <label class="flabel">Fotos</label>
+      <div class="fotos-preview" id="fotosPreview"></div>
+      <button class="btn-fotos" onclick="document.getElementById('fileIn').click()">📷 Adicionar fotos da galeria</button>
+      <input type="file" id="fileIn" multiple accept="image/*" onchange="previewFotos(this)">
+      <div class="info-box" style="margin-top:8px">
+        <strong>📁 Para guardar fotos permanentemente:</strong>
+        Após guardar o registo, faz upload das fotos para o GitHub na pasta <em>fotos/NN-nome-arvore/</em> via app GitHub Mobile. A app carrega-as automaticamente.
+      </div>
     </div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
@@ -507,233 +197,191 @@
 </div>
 
 <!-- LIGHTBOX -->
-<div class="lightbox" id="lightbox" onclick="fecharLightbox()">
-  <button class="lightbox-close">✕</button>
-  <img id="lightboxImg" src="" alt="">
+<div class="lightbox" id="lb" onclick="fecharLb()">
+  <button class="lb-close">✕</button>
+  <img id="lbImg" src="" alt="">
 </div>
 
 <script>
-// ═══════════════════════════════════════════
-// DADOS DAS 13 ÁRVORES
-// ═══════════════════════════════════════════
-const ARVORES = [
-  { id:1, nome:"Nectarina", emoji:"🍑", sciName:"Prunus persica var. nucipersica", vaso:"~30L laranja", ph:null, urgencia:"urgente" },
-  { id:2, nome:"Laranjeira", emoji:"🍊", sciName:"Citrus sinensis", vaso:"~30L cinzento", ph:null, urgencia:"medio" },
-  { id:3, nome:"Mandarino", emoji:"🍊", sciName:"Citrus reticulata", vaso:"~25L laranja", ph:6.5, urgencia:"medio" },
-  { id:4, nome:"Kumquat Margarita", emoji:"🟠", sciName:"Fortunella margarita", vaso:"~30L preto", ph:null, urgencia:"urgente" },
-  { id:5, nome:"Groselha Negra", emoji:"🫐", sciName:"Ribes nigrum", vaso:"~25L preto", ph:6.2, urgencia:"medio" },
-  { id:6, nome:"Romãzeira", emoji:"🍎", sciName:"Punica granatum", vaso:"~25L preto", ph:null, urgencia:"baixo" },
-  { id:7, nome:"Figueira", emoji:"🫐", sciName:"Ficus carica", vaso:"~25L preto", ph:6.5, urgencia:"urgente" },
-  { id:8, nome:"Castanheiro", emoji:"🌰", sciName:"Castanea sativa", vaso:"~25L preto", ph:6.5, urgencia:"urgente" },
-  { id:9, nome:"Cerejeira Burjat", emoji:"🍒", sciName:"Prunus avium cv. Burjat", vaso:"~25L preto", ph:7.0, urgencia:"critico" },
-  { id:10, nome:"Cerejeira Branca", emoji:"🍒", sciName:"Prunus avium cv. branca", vaso:"~25L preto", ph:6.5, urgencia:"urgente" },
-  { id:11, nome:"Pereira Duo", emoji:"🍐", sciName:"Pyrus communis (2 var.)", vaso:"~25L preto", ph:6.5, urgencia:"medio" },
-  { id:12, nome:"Macieira Duo", emoji:"🍎", sciName:"Malus domestica (2 var.)", vaso:"~25L preto", ph:6.5, urgencia:"urgente" },
-  { id:13, nome:"Ameixeira Duo", emoji:"🫐", sciName:"Prunus domestica + salicina", vaso:"~25L preto", ph:6.5, urgencia:"urgente" },
-];
-
-// Registo inicial — diagnóstico de 20 junho 2026
-const REGISTOS_INICIAIS = {
-  1: [{ id:"r1_1", data:"2026-06-20", diagnostico:"Crivado fúngico (Wilsonomyces carpophilus) ativo — manchas circulares amarelo-alaranjadas com halo vermelho. Clorose internerval Fe/Mg. Caule com manchas purpúreas nos nós a vigiar (possível cancro bacteriano ou stress).", tratamento:"Pendente: Calda bordalesa foliar 1 aplicação; CANNA Mono Hierro 2-3ml/L em rega 1x/sem × 3 semanas.", urgencia:"urgente", fotos:[] }],
-  2: [{ id:"r2_1", data:"2026-06-20", diagnostico:"Clorose internerval Fe em folhas jovens. Folhas enroladas — possível stress hídrico leve. Dois caules na base — verificar se ramo basal é do porta-enxerto.", tratamento:"Pendente: Ferroflower ou CANNA Mono Hierro 2ml/L 1x/sem. Verificar ramo basal.", urgencia:"medio", fotos:[] }],
-  3: [{ id:"r3_1", data:"2026-06-20", diagnostico:"pH 6.5 medido — limite superior para citrino. Clorose Fe incipiente nas folhas jovens (amarelo-lima). Possível défice Mg nas folhas maduras.", tratamento:"Pendente: Acidificação com ácido cítrico para pH 5.8-6.2. Ferroflower 2ml/L 1x/sem.", urgencia:"medio", fotos:[] }],
-  4: [{ id:"r4_1", data:"2026-06-20", diagnostico:"Lagarta ativa confirmada visualmente no ramo. Danos foliares por mastigação. Floração ativa presente. Clorose Mg nas folhas basais.", tratamento:"URGENTE: Remoção manual da lagarta hoje. Neem 5ml/L + sabão potássico 2ml/L ao fim do dia (não nas flores). NPK 6-15-12 em rega quinzenal.", urgencia:"urgente", fotos:[] }],
-  5: [{ id:"r5_1", data:"2026-06-20", diagnostico:"pH 6.2 — ideal para groselha negra. Clorose Fe+Mg ativa. Necrose marginal das folhas maduras — possível défice K. Vaso sobre betão — calor radicular.", tratamento:"Pendente: CANNA Mono Hierro + Plagron Supermix + NPK 6-15-12. Elevar vaso do betão.", urgencia:"medio", fotos:[] }],
-  6: [{ id:"r6_1", data:"2026-06-20", diagnostico:"Estado geral bom. Folhas novas avermelhadas — normal em romãzeira (antocianinas). Substrato seco e arenoso. Clorose leve Fe/N.", tratamento:"Rega profunda imediata. Húmus líquido Siro + CANNA Mono Hierro 2ml/L. NPK 6-15-12 quinzenal.", urgencia:"baixo", fotos:[] }],
-  7: [{ id:"r7_1", data:"2026-06-20", diagnostico:"pH 6.5. Lesmas ativas confirmadas — buracos irregulares nas folhas (padrão nocturno). Figos em formação visíveis. Clorose Fe moderada. Manchas fúngicas incipientes.", tratamento:"URGENTE: Ferramol ao redor do vaso hoje. Fita de cobre no vaso. Neem foliar 5ml/L. CANNA Mono Hierro.", urgencia:"urgente", fotos:[] }],
-  8: [{ id:"r8_1", data:"2026-06-20", diagnostico:"pH 6.5 — CRÍTICO para castanheiro calcífugo (necessita 5.0-6.0). Mineiro foliar ativo (Phyllonorycter sp.) — galerias e exúvias visíveis. Clorose Fe severa por bloqueio de pH.", tratamento:"1º: Acidificação urgente — ácido cítrico 2g/L 3×/sem por 3 semanas. 2º: Drench neem 15ml/L + sabão 2-3ml/L, 500-750ml, 7em7 dias × 3. 3º: Ferroflower só após pH < 6.2. Repotagem para 50-60L no outono.", urgencia:"urgente", fotos:[] }],
-  9: [{ id:"r9_1", data:"2026-06-20", diagnostico:"pH 7.0 — CRÍTICO (pior valor do conjunto). Cancro/necrose basal no caule — inspecionar urgentemente extensão. Crivado fúngico ativo. Clorose Fe severa. Caule morto suspeito à base.", tratamento:"EMERGÊNCIA: Inspeção física da base do caule hoje. Acidificação ácido cítrico 2g/L 3×/sem. Calda bordalesa foliar. Ferroflower só após pH 6.5. NÃO fertilizar até pH corrigido.", urgencia:"critico", fotos:[] }],
-  10: [{ id:"r10_1", data:"2026-06-20", diagnostico:"pH 6.5. Pulgões Myzus cerasi confirmados — pontos amarelos nos pecíolos e rebentos enrolados. Cola entomológica necessária para bloquear formigas que pastoreiam os pulgões. Crivado incipiente.", tratamento:"URGENTE: Remoção manual dos ápices enrolados com colónia. Cola entomológica no caule (sobre cardboard). Neem 5ml/L + sabão potássico foliar. Calda bordalesa após ciclo neem.", urgencia:"urgente", fotos:[] }],
-  11: [{ id:"r11_1", data:"2026-06-20", diagnostico:"Pereira Duo — pH 6.5. Ramo A: folhas ovais largas (tipo Rocha/Williams). Ramo B: folhas estreitas (tipo Conference). Mancha necrótica grande numa folha — vigiar (possível Entomosporium ou queimadura). Clorose Fe leve. Dano por mastigação.", tratamento:"Vigiar mancha — calda bordalesa se se multiplicar. CANNA Mono Hierro 2ml/L. Ferramol.", urgencia:"medio", fotos:[] }],
-  12: [{ id:"r12_1", data:"2026-06-20", diagnostico:"Macieira Duo — pH 6.5. Mineiro foliar ativo (galeria visível). Possível oídio — verificar rebentos brancos (teste do dedo). Pontos amarelos — suspeita ácaro inicial. Ramo A: folha larga tomentosa (tipo Golden/Fuji). Ramo B: folha estreita glabra (tipo Braeburn/Elstar).", tratamento:"Drench neem 15ml/L sistémico para mineiro. Bicarbonato 5g/L se oídio confirmado. Neem foliar face inferior.", urgencia:"urgente", fotos:[] }],
-  13: [{ id:"r13_1", data:"2026-06-20", diagnostico:"Ameixeira Duo — pH 6.5. Gorgulho adulto confirmado visualmente. Danos foliares com buracos geométricos perfeitos (assinatura de gorgulho). Larvas no substrato suspeitas. Mancha necrótica escura — possível Xanthomonas ou Polystigma. Substrato seco. Variedade A: P.domestica (folha grande rugosa). Variedade B: P.salicina (folha pequena lisa).", tratamento:"URGENTE: Inspeção nocturna com lanterna. Steinernema kraussei (nematodes) em rega para larvas. Rega profunda imediata. Calda bordalesa foliar.", urgencia:"urgente", fotos:[] }],
+const REPO = 'nnuxx/jardim-fruticola';
+const RAW = 'https://raw.githubusercontent.com/' + REPO + '/main/';
+const PASTA_MAP = {
+  1:'01-nectarina', 2:'02-laranjeira', 3:'03-mandarino', 4:'04-kumquat',
+  5:'05-groselha-negra', 6:'06-romanzeira', 7:'07-figueira', 8:'08-castanheiro',
+  9:'09-cerejeira-burjat', 10:'10-cerejeira-branca', 11:'11-pereira-duo',
+  12:'12-macieira-duo', 13:'13-ameixeira-duo'
+};
+const BADGE = {
+  critico: ['badge critico','🚨 Crítico'],
+  urgente: ['badge urgente','🔴 Urgente'],
+  medio:   ['badge medio','🟡 Médio'],
+  baixo:   ['badge baixo','🟢 OK'],
 };
 
-// ═══════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════
-let state = {
-  viewAtual: 'dashboard',
-  arvoreAtiva: null,
-  filtroAtivo: 'todos',
-  registos: {},
-  fotosNovoRegisto: [],
-};
+let DATA = null;
+let arvoreAtiva = null;
+let fotosLocais = []; // base64 temporário para preview
 
-function init() {
-  const saved = localStorage.getItem('jardim_registos');
-  if (saved) {
-    state.registos = JSON.parse(saved);
-  } else {
-    state.registos = JSON.parse(JSON.stringify(REGISTOS_INICIAIS));
-    salvarRegistos();
-  }
-  renderDashboard();
-  // set today's date on modal
+// ── INIT ─────────────────────────────────
+async function init() {
   document.getElementById('novoData').value = new Date().toISOString().split('T')[0];
+  try {
+    const r = await fetch(RAW + 'data.json?t=' + Date.now());
+    DATA = await r.json();
+    // Merge com localStorage para registos adicionados localmente ainda não commitados
+    const local = localStorage.getItem('jardim_local');
+    if (local) {
+      const ldata = JSON.parse(local);
+      Object.keys(ldata).forEach(id => {
+        if (!DATA.registos[id]) DATA.registos[id] = [];
+        ldata[id].forEach(lr => {
+          if (!DATA.registos[id].find(r => r.id === lr.id)) {
+            DATA.registos[id].push(lr);
+          }
+        });
+      });
+    }
+    renderDashboard();
+  } catch(e) {
+    document.getElementById('listaArvores').innerHTML = '<div class="loading">Erro ao carregar dados. Verifica a ligação.</div>';
+  }
 }
 
-function salvarRegistos() {
-  localStorage.setItem('jardim_registos', JSON.stringify(state.registos));
-}
+// ── DASHBOARD ────────────────────────────
+let filtroAtivo = 'todos';
 
-// ═══════════════════════════════════════════
-// NAVEGAÇÃO
-// ═══════════════════════════════════════════
-function mostrarView(view) {
-  if (view === 'dashboard') voltarDashboard();
-  else if (view === 'notas') mostrarNotas();
-}
-
-function voltarDashboard() {
-  state.viewAtual = 'dashboard';
-  state.arvoreAtiva = null;
-  document.getElementById('viewDashboard').classList.add('active');
-  document.getElementById('viewDetalhe').classList.remove('active');
-  document.getElementById('backBtn').style.display = 'none';
-  document.getElementById('headerTitle').textContent = '🌿 Jardim Frutícola';
-  document.getElementById('navDashboard').classList.add('active');
-  document.getElementById('navNotas').classList.remove('active');
-}
-
-function abrirArvore(id) {
-  state.arvoreAtiva = id;
-  state.viewAtual = 'detalhe';
-  const arvore = ARVORES.find(a => a.id === id);
-  document.getElementById('viewDashboard').classList.remove('active');
-  document.getElementById('viewDetalhe').classList.add('active');
-  document.getElementById('backBtn').style.display = 'block';
-  document.getElementById('headerTitle').textContent = arvore.nome;
-  renderDetalhe(id);
-}
-
-function mostrarNotas() {
-  // placeholder
-  document.getElementById('navNotas').classList.add('active');
-  document.getElementById('navDashboard').classList.remove('active');
-}
-
-// ═══════════════════════════════════════════
-// DASHBOARD
-// ═══════════════════════════════════════════
-function filtrar(filtro, btn) {
-  state.filtroAtivo = filtro;
+function filtrar(f, btn) {
+  filtroAtivo = f;
   document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderDashboard();
 }
 
 function renderDashboard() {
+  if (!DATA) return;
   const lista = document.getElementById('listaArvores');
-  let arvores = ARVORES;
-  if (state.filtroAtivo !== 'todos') {
-    arvores = ARVORES.filter(a => a.urgencia === state.filtroAtivo);
-  }
-
-  const badgeMap = {
-    critico: ['badge-critico', '🚨 Crítico'],
-    urgente: ['badge-urgente', '🔴 Urgente'],
-    medio: ['badge-medio', '🟡 Médio'],
-    baixo: ['badge-baixo', '🟢 OK'],
-  };
-
+  let arvores = DATA.arvores;
+  if (filtroAtivo !== 'todos') arvores = arvores.filter(a => a.urgencia === filtroAtivo);
+  const [bc, bl] = BADGE;
   lista.innerHTML = arvores.map(a => {
-    const registos = state.registos[a.id] || [];
-    const ultimo = registos[registos.length - 1];
-    const [badgeClass, badgeLabel] = badgeMap[a.urgencia] || badgeMap.baixo;
-    const phStr = a.ph ? `pH ${a.ph} · ` : '';
-    const subStr = ultimo ? `Último registo: ${formatData(ultimo.data)}` : 'Sem registos';
-    return `
-      <div class="arvore-card ${a.urgencia}" onclick="abrirArvore(${a.id})">
-        <div class="arvore-emoji">${a.emoji}</div>
-        <div class="arvore-info">
-          <div class="arvore-nome">${a.nome}</div>
-          <div class="arvore-sub">${phStr}${subStr}</div>
-        </div>
-        <span class="urgencia-badge ${badgeClass}">${badgeLabel}</span>
-      </div>`;
+    const regs = DATA.registos[a.id] || [];
+    const ult = regs[regs.length-1];
+    const [bc, bl] = BADGE[a.urgencia] || BADGE.baixo;
+    const ph = a.ph ? `pH ${a.ph} · ` : '';
+    const sub = ult ? `Último: ${fmtData(ult.data)}` : 'Sem registos';
+    return `<div class="arvore-card ${a.urgencia}" onclick="abrirArvore(${a.id})">
+      <div class="arvore-emoji">${a.emoji}</div>
+      <div class="arvore-info">
+        <div class="arvore-nome">${a.nome}</div>
+        <div class="arvore-sub">${ph}${sub}</div>
+      </div>
+      <span class="${bc}">${bl}</span>
+    </div>`;
   }).join('');
 }
 
-// ═══════════════════════════════════════════
-// DETALHE
-// ═══════════════════════════════════════════
-function renderDetalhe(id) {
-  const arvore = ARVORES.find(a => a.id === id);
-  const registos = (state.registos[id] || []).slice().reverse();
-  const badgeMap = { critico:'badge-critico', urgente:'badge-urgente', medio:'badge-medio', baixo:'badge-baixo' };
+// ── DETALHE ──────────────────────────────
+function abrirArvore(id) {
+  arvoreAtiva = id;
+  document.getElementById('viewDashboard').classList.remove('active');
+  document.getElementById('viewDetalhe').classList.add('active');
+  document.getElementById('backBtn').style.display = 'block';
+  const a = DATA.arvores.find(x => x.id === id);
+  document.getElementById('headerTitle').textContent = a.nome;
+  document.getElementById('navD').classList.remove('active');
+  renderDetalhe(id);
+}
 
-  const phChip = arvore.ph ? `<span class="meta-chip">pH ${arvore.ph}</span>` : '';
-  const vasoChip = `<span class="meta-chip">${arvore.vaso}</span>`;
+function voltarDashboard() {
+  arvoreAtiva = null;
+  document.getElementById('viewDashboard').classList.add('active');
+  document.getElementById('viewDetalhe').classList.remove('active');
+  document.getElementById('backBtn').style.display = 'none';
+  document.getElementById('headerTitle').textContent = '🌿 Jardim Frutícola';
+  document.getElementById('navD').classList.add('active');
+}
 
-  const registosHTML = registos.length === 0
-    ? `<div class="empty"><div class="emoji">📋</div><p>Sem registos ainda.<br>Adiciona o primeiro abaixo.</p></div>`
-    : registos.map((r, i) => `
-      <div class="registo-card">
-        <div class="registo-header ${i===0?'open':''}" onclick="toggleRegisto(this)">
-          <div>
-            <div class="registo-data">${formatData(r.data)}</div>
-            <div class="registo-titulo">${r.diagnostico.substring(0,60)}${r.diagnostico.length>60?'…':''}</div>
+async function renderDetalhe(id) {
+  const a = DATA.arvores.find(x => x.id === id);
+  const regs = (DATA.registos[id] || []).slice().reverse();
+  const ph = a.ph ? `<span class="chip">pH ${a.ph}</span>` : '';
+
+  // Buscar lista de fotos do GitHub para esta árvore
+  const pasta = PASTA_MAP[id];
+  let fotosGH = [];
+  try {
+    const r = await fetch(`https://api.github.com/repos/${REPO}/contents/fotos/${pasta}`, {
+      headers: {'Accept':'application/vnd.github.v3+json'}
+    });
+    const files = await r.json();
+    if (Array.isArray(files)) {
+      fotosGH = files
+        .filter(f => f.name !== '.gitkeep' && /\.(jpg|jpeg|png|webp|gif)$/i.test(f.name))
+        .map(f => f.download_url);
+    }
+  } catch(e) {}
+
+  const fotosSection = fotosGH.length > 0 ? `
+    <div class="sec-title" style="margin-top:4px">Fotos da árvore <span>${fotosGH.length}</span></div>
+    <div class="fotos-row" style="margin-bottom:16px">
+      ${fotosGH.map(url => `<img class="foto-thumb" src="${url}" onclick="abrirLb('${url}')" loading="lazy">`).join('')}
+    </div>` : '';
+
+  const regsHTML = regs.length === 0
+    ? `<div class="empty"><div class="eico">📋</div><p>Sem registos ainda.</p></div>`
+    : regs.map((r,i) => {
+        const [bc] = BADGE[r.urgencia] || BADGE.baixo;
+        const fotos = (r.fotos || []).filter(f => f && f.length > 10);
+        return `<div class="reg-card">
+          <div class="reg-head ${i===0?'open':''}" onclick="toggleReg(this)">
+            <div>
+              <div class="reg-data">${fmtData(r.data)}</div>
+              <div class="reg-titulo">${r.diagnostico.substring(0,65)}${r.diagnostico.length>65?'…':''}</div>
+            </div>
+            <div class="reg-chev ${i===0?'open':''}">⌄</div>
           </div>
-          <div class="registo-chevron ${i===0?'open':''}">⌄</div>
-        </div>
-        <div class="registo-body ${i===0?'open':''}">
-          ${r.fotos && r.fotos.length > 0 ? `
-          <div class="registo-fotos">
-            ${r.fotos.map(f => `<img class="registo-foto" src="${f}" onclick="abrirLightbox('${f}')">`).join('')}
-          </div>` : ''}
-          <div class="registo-secao">
-            <div class="registo-secao-label">Diagnóstico</div>
-            <div class="registo-secao-texto">${r.diagnostico}</div>
+          <div class="reg-body ${i===0?'open':''}">
+            ${fotos.length > 0 ? `<div class="fotos-row">${fotos.map(f=>`<img class="foto-thumb" src="${f}" onclick="abrirLb('${f}')" loading="lazy">`).join('')}</div>` : ''}
+            <div class="reg-sec"><div class="reg-sec-label">Diagnóstico</div><div class="reg-sec-text">${r.diagnostico}</div></div>
+            <div class="reg-sec"><div class="reg-sec-label">Tratamento</div><div class="reg-sec-text">${r.tratamento || '—'}</div></div>
+            <span class="${bc}" style="font-size:12px;padding:3px 10px;border-radius:10px">${BADGE[r.urgencia]?.[1]||''}</span>
           </div>
-          <div class="registo-secao">
-            <div class="registo-secao-label">Tratamento</div>
-            <div class="registo-secao-texto">${r.tratamento}</div>
-          </div>
-          <div class="tag-list">
-            <span class="tag urgencia-${r.urgencia}">${{critico:'🚨 Crítico',urgente:'🔴 Urgente',medio:'🟡 Médio',baixo:'🟢 OK'}[r.urgencia]}</span>
-          </div>
-        </div>
-      </div>`).join('');
+        </div>`;
+      }).join('');
 
   document.getElementById('detalheConteudo').innerHTML = `
     <div class="arvore-header">
-      <div class="arvore-header-emoji">${arvore.emoji}</div>
-      <div class="arvore-header-info">
-        <h2>${arvore.nome}</h2>
-        <p><em>${arvore.sciName}</em></p>
-        <div class="arvore-meta">${vasoChip}${phChip}</div>
+      <div class="ah-emoji">${a.emoji}</div>
+      <div class="ah-info">
+        <h2>${a.nome}</h2>
+        <p><em>${a.sciName}</em></p>
+        <div class="ah-chips"><span class="chip">${a.vaso}</span>${ph}</div>
       </div>
     </div>
-    <div class="section-title">
-      Historial <span>${registos.length} registo${registos.length!==1?'s':''}</span>
-    </div>
-    ${registosHTML}
-    <button class="btn-novo" onclick="abrirModal(${id})" style="margin-top:12px;">
-      + Novo Registo
-    </button>`;
+    ${fotosSection}
+    <div class="sec-title">Historial <span>${regs.length} registo${regs.length!==1?'s':''}</span></div>
+    ${regsHTML}
+    <button class="btn-novo" onclick="abrirModal(${id})">+ Novo Registo</button>`;
 }
 
-function toggleRegisto(header) {
-  const body = header.nextElementSibling;
-  const chevron = header.querySelector('.registo-chevron');
-  header.classList.toggle('open');
+function toggleReg(head) {
+  const body = head.nextElementSibling;
+  const chev = head.querySelector('.reg-chev');
+  head.classList.toggle('open');
   body.classList.toggle('open');
-  chevron.classList.toggle('open');
+  chev.classList.toggle('open');
 }
 
-// ═══════════════════════════════════════════
-// MODAL NOVO REGISTO
-// ═══════════════════════════════════════════
-let arvoreModalId = null;
+// ── MODAL ────────────────────────────────
+let modalId = null;
 
 function abrirModal(id) {
-  arvoreModalId = id;
-  state.fotosNovoRegisto = [];
+  modalId = id;
+  fotosLocais = [];
   document.getElementById('fotosPreview').innerHTML = '';
-  document.getElementById('novoDiagnostico').value = '';
-  document.getElementById('novoTratamento').value = '';
-  document.getElementById('novaUrgencia').value = 'medio';
+  document.getElementById('novoDiag').value = '';
+  document.getElementById('novoTrat').value = '';
+  document.getElementById('novaUrg').value = 'medio';
   document.getElementById('novoData').value = new Date().toISOString().split('T')[0];
   document.getElementById('modalOverlay').classList.add('open');
 }
@@ -742,67 +390,92 @@ function fecharModal() {
   document.getElementById('modalOverlay').classList.remove('open');
 }
 
-function adicionarFotos(input) {
-  const files = Array.from(input.files);
-  const preview = document.getElementById('fotosPreview');
-  files.forEach(file => {
+function previewFotos(input) {
+  const prev = document.getElementById('fotosPreview');
+  Array.from(input.files).forEach(file => {
     const reader = new FileReader();
     reader.onload = e => {
-      state.fotosNovoRegisto.push(e.target.result);
+      fotosLocais.push(e.target.result);
       const img = document.createElement('img');
       img.src = e.target.result;
-      img.style.cssText = 'width:70px;height:70px;object-fit:cover;border-radius:8px;';
-      preview.appendChild(img);
+      img.className = 'foto-preview-thumb';
+      prev.appendChild(img);
     };
     reader.readAsDataURL(file);
   });
 }
 
 function guardarRegisto() {
-  const data = document.getElementById('novoData').value;
-  const diag = document.getElementById('novoDiagnostico').value.trim();
-  const trat = document.getElementById('novoTratamento').value.trim();
-  const urg = document.getElementById('novaUrgencia').value;
-
+  const diag = document.getElementById('novoDiag').value.trim();
   if (!diag) { alert('Adiciona pelo menos o diagnóstico.'); return; }
 
-  const id = arvoreModalId;
-  if (!state.registos[id]) state.registos[id] = [];
-
-  const novoRegisto = {
-    id: `r${id}_${Date.now()}`,
-    data, diagnostico: diag, tratamento: trat, urgencia: urg,
-    fotos: [...state.fotosNovoRegisto]
+  const novo = {
+    id: 'r' + modalId + '_' + Date.now(),
+    data: document.getElementById('novoData').value,
+    diagnostico: diag,
+    tratamento: document.getElementById('novoTrat').value.trim(),
+    urgencia: document.getElementById('novaUrg').value,
+    fotos: [...fotosLocais]
   };
 
-  state.registos[id].push(novoRegisto);
+  if (!DATA.registos[modalId]) DATA.registos[modalId] = [];
+  DATA.registos[modalId].push(novo);
 
   // Atualizar urgência da árvore
-  const idx = ARVORES.findIndex(a => a.id === id);
-  ARVORES[idx].urgencia = urg;
+  const idx = DATA.arvores.findIndex(a => a.id === modalId);
+  DATA.arvores[idx].urgencia = novo.urgencia;
 
-  salvarRegistos();
+  // Guardar localmente (backup enquanto não é commitado)
+  const local = JSON.parse(localStorage.getItem('jardim_local') || '{}');
+  if (!local[modalId]) local[modalId] = [];
+  local[modalId].push(novo);
+  localStorage.setItem('jardim_local', JSON.stringify(local));
+
   fecharModal();
-  renderDetalhe(id);
+  renderDetalhe(modalId);
 }
 
-// ═══════════════════════════════════════════
-// LIGHTBOX
-// ═══════════════════════════════════════════
-function abrirLightbox(src) {
-  document.getElementById('lightboxImg').src = src;
-  document.getElementById('lightbox').classList.add('open');
+// ── LIGHTBOX ─────────────────────────────
+function abrirLb(src) {
+  document.getElementById('lbImg').src = src;
+  document.getElementById('lb').classList.add('open');
 }
-function fecharLightbox() {
-  document.getElementById('lightbox').classList.remove('open');
+function fecharLb() { document.getElementById('lb').classList.remove('open'); }
+
+// ── INFO ─────────────────────────────────
+function mostrarInfo() {
+  document.getElementById('navI').classList.add('active');
+  document.getElementById('navD').classList.remove('active');
+  document.getElementById('viewDashboard').classList.remove('active');
+  document.getElementById('viewDetalhe').classList.remove('active');
+  // mostrar painel de ajuda simples inline
+  document.getElementById('viewDashboard').classList.add('active');
+  document.getElementById('listaArvores').innerHTML = `
+    <div style="background:#fff;border-radius:12px;padding:20px;margin-top:8px">
+      <div style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:16px">Como usar</div>
+      <div style="font-size:14px;line-height:1.7;color:#374151">
+        <strong>📋 Novo registo</strong><br>
+        Abre a árvore → "Novo Registo" → preenche diagnóstico e tratamento → Guardar.<br><br>
+        <strong>📷 Adicionar fotos</strong><br>
+        1. Abre a app <strong>GitHub Mobile</strong><br>
+        2. Vai ao repositório <em>jardim-fruticola</em><br>
+        3. Entra na pasta <em>fotos/NN-nome-arvore/</em><br>
+        4. Faz upload das fotos<br>
+        5. Volta à app e as fotos aparecem automaticamente.<br><br>
+        <strong>🔄 Actualizar diagnósticos</strong><br>
+        Envia fotos ao Claude e pede novo diagnóstico. O Claude actualiza o ficheiro <em>data.json</em> no GitHub e os dados ficam disponíveis na app.<br><br>
+        <strong>💾 Dados locais</strong><br>
+        Registos adicionados por ti ficam guardados no telemóvel até o Claude actualizar o data.json.
+      </div>
+      <button class="btn-novo" onclick="voltarDashboard()" style="margin-top:16px">← Voltar às árvores</button>
+    </div>`;
+  document.getElementById('headerTitle').textContent = 'Como usar';
 }
 
-// ═══════════════════════════════════════════
-// UTILS
-// ═══════════════════════════════════════════
-function formatData(str) {
-  if (!str) return '';
-  const [y, m, d] = str.split('-');
+// ── UTILS ────────────────────────────────
+function fmtData(s) {
+  if (!s) return '';
+  const [y,m,d] = s.split('-');
   return `${d}/${m}/${y}`;
 }
 
