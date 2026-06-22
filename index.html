@@ -115,6 +115,26 @@ input[type="file"] { display:none; }
 .btn-add-prod { background:var(--verde); color:#fff; border:none; border-radius:10px; padding:12px 16px; font-size:14px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; display:flex; align-items:center; gap:6px; width:100%; justify-content:center; margin-top:16px; }
 .arvore-bloq { background:#FEF3C7; border-radius:8px; padding:8px 12px; margin-top:8px; font-size:12px; color:#92400E; }
 .arvore-bloq strong { display:block; margin-bottom:4px; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; }
+/* ── TAREFAS ── */
+.semana-label { font-size:13px; font-weight:600; color:var(--verde); margin:16px 0 10px; padding-top:16px; }
+.semana-label:first-child { padding-top:0; }
+.tarefa-card { background:#fff; border-radius:12px; padding:14px 16px; margin-bottom:8px; box-shadow:0 1px 3px rgba(0,0,0,0.07); display:flex; align-items:flex-start; gap:12px; cursor:pointer; transition:opacity 0.2s; }
+.tarefa-card.feita { opacity:0.45; }
+.tarefa-check { width:22px; height:22px; border-radius:50%; border:2px solid #D1D5DB; flex-shrink:0; display:flex; align-items:center; justify-content:center; margin-top:1px; transition:all 0.15s; }
+.tarefa-card.feita .tarefa-check { background:var(--verde-m); border-color:var(--verde-m); }
+.tarefa-check::after { content:''; display:none; }
+.tarefa-card.feita .tarefa-check::after { content:'✓'; display:block; color:#fff; font-size:13px; font-weight:700; }
+.tarefa-info { flex:1; }
+.tarefa-nome { font-size:14px; font-weight:600; line-height:1.3; }
+.tarefa-card.feita .tarefa-nome { text-decoration:line-through; color:var(--cinza); }
+.tarefa-det { font-size:12px; color:var(--cinza); margin-top:3px; line-height:1.4; }
+.tarefas-resumo { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:4px; padding-top:16px; }
+.tar-stat { background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.07); }
+.tar-stat-num { font-family:'DM Serif Display',serif; font-size:28px; }
+.tar-stat-num.ok { color:var(--verde-m); }
+.tar-stat-num.pend { color:var(--terra); }
+.tar-stat-label { font-size:11px; color:var(--cinza); margin-top:2px; }
+.btn-reset-tarefas { background:#F3F4F6; color:var(--cinza); border:none; border-radius:10px; padding:10px 16px; font-size:13px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; width:100%; margin-top:12px; }
 </style>
 </head>
 <body>
@@ -143,9 +163,14 @@ input[type="file"] { display:none; }
   <div id="stockConteudo"></div>
 </div>
 
+<div class="view" id="viewTarefas">
+  <div id="tarefasConteudo"></div>
+</div>
+
 <div class="bnav">
   <button class="nbtn active" id="navD" onclick="voltarDashboard()"><span>🌳</span>Árvores</button>
   <button class="nbtn" id="navS" onclick="mostrarStock()"><span>🧪</span>Stock</button>
+  <button class="nbtn" id="navT" onclick="mostrarTarefas()"><span>✅</span>Tarefas</button>
   <button class="nbtn" id="navI" onclick="mostrarAjuda()"><span>ℹ️</span>Ajuda</button>
 </div>
 
@@ -384,6 +409,7 @@ function voltarDashboard() {
   setView('viewDashboard', '🌿 Jardim Frutícola', false);
   document.getElementById('navD').classList.add('active');
   document.getElementById('navS').classList.remove('active');
+  document.getElementById('navT').classList.remove('active');
   document.getElementById('navI').classList.remove('active');
   renderDashboard();
 }
@@ -529,6 +555,7 @@ function mostrarStock() {
   setView('viewStock', '🧪 Stock');
   document.getElementById('navS').classList.add('active');
   document.getElementById('navD').classList.remove('active');
+  document.getElementById('navT').classList.remove('active');
   document.getElementById('navI').classList.remove('active');
   renderStock();
 }
@@ -647,6 +674,7 @@ function mostrarAjuda() {
   document.getElementById('navI').classList.add('active');
   document.getElementById('navD').classList.remove('active');
   document.getElementById('navS').classList.remove('active');
+  document.getElementById('navT').classList.remove('active');
   document.getElementById('detalheConteudo').innerHTML = `
     <div style="background:#fff;border-radius:12px;padding:20px;margin-top:0">
       <div style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:16px">Guia rápido</div>
@@ -676,12 +704,117 @@ function fecharLb()    { document.getElementById('lb').classList.remove('open');
 // ── UTILS ─────────────────────────────────
 function fmtData(s) { if(!s)return''; const[y,m,d]=s.split('-'); return`${d}/${m}/${y}`; }
 
+// ═══════════════════════════════════════════
+// TAREFAS BASE (sincronizadas com calendário)
+// ═══════════════════════════════════════════
+const TAREFAS_BASE = [
+  // RECORRENTES SEMANAIS
+  {id:"t01", nome:"Fornos-ArvoresFruto_Rega manutenção", det:"Verificar substrato seco 5cm. Regar mais em dias quentes. Dispensar nas árvores com tratamento no mesmo dia.", freq:"2ª e 5ª feira", cat:"Rega"},
+  {id:"t02", nome:"Fornos-ArvoresFruto_Acidificação rega", det:"Castanheiro + Cerejeira Burjat. Ácido nítrico gota-a-gota após Ferroflower até pH 5.0–5.5. Meta: Castanheiro < 6.0 / Burjat ≤ 6.2.", freq:"2ª, 4ª e 6ª feira (3 semanas)", cat:"Tratamento"},
+  {id:"t03", nome:"Fornos-ArvoresFruto_Drench neem solo", det:"Castanheiro + Macieira Duo. 15ml/L neem + 2-3ml/L sabão potássico, 500-750ml por sessão. Aplicar ao solo, não foliar.", freq:"2ª feira (3 semanas)", cat:"Tratamento"},
+  {id:"t04", nome:"Fornos-ArvoresFruto_Neem foliar", det:"Kumquat + Nectarina + Cerejeira Branca. 5ml/L neem + 2ml/L sabão. Aplicar ao fim do dia. Sabão em água morna primeiro, neem em fio fino.", freq:"2ª e 5ª feira (3 semanas)", cat:"Tratamento"},
+  {id:"t05", nome:"Fornos-ArvoresFruto_Ferroflower rega", det:"Todas as árvores. Ferroflower na água pH 5.0–5.5. Regar até saturação sem drenar — reter quelato no substrato.", freq:"Domingos (3 semanas)", cat:"Nutrição"},
+  {id:"t06", nome:"Fornos-ArvoresFruto_Medição pH substrato", det:"Todas as árvores. Focos: Castanheiro < 6.0 / Cerejeira Burjat ≤ 6.2 / Nectarina < 6.5. Registar na app.", freq:"2ª feira (4 semanas)", cat:"Monitorização"},
+  // PONTUAIS
+  {id:"t07", nome:"Fornos-ArvoresFruto_Ferramol Figueira", det:"Aplicar Ferramol ao redor do vaso. Lesmas confirmadas. Repetir após chuva ou rega abundante.", freq:"Pontual — hoje", cat:"Tratamento"},
+  {id:"t08", nome:"Fornos-ArvoresFruto_Cola entomológica Cerejeira Branca", det:"Aplicar cola entomológica no caule sobre faixa de cartão. Bloquear formigas que protegem pulgões Myzus cerasi.", freq:"Pontual — hoje", cat:"Tratamento"},
+  {id:"t09", nome:"Fornos-ArvoresFruto_Inspecção nocturna Ameixeira Duo", det:"Após anoitecer com lanterna. Gorgulhos adultos (Otiorhynchus) são nocturnos — apanhar e destruir. Verificar buracos geométricos nas folhas.", freq:"Pontual — esta noite (22h)", cat:"Monitorização"},
+  {id:"t10", nome:"Fornos-ArvoresFruto_KB Citrinos 2ª aplicação", det:"Laranjeira + Mandarino + Kumquat. Granulado à superfície, incorporar com garfo, regar de seguida.", freq:"Pontual — 20 Julho", cat:"Nutrição"},
+  {id:"t11", nome:"Fornos-ArvoresFruto_Larvanem HB Ameixeira Duo", det:"Aplicar em rega ao substrato quando produto chegar. Manter substrato húmido 2-3 semanas após aplicação.", freq:"Pontual — quando produto chegar (~15 Jul)", cat:"Tratamento"},
+  {id:"t12", nome:"Fornos-ArvoresFruto_Comprar Ácido Cítrico 5kg", det:"Amazon.es — ácido cítrico anhidro grau alimentar 5kg. Link: https://www.amazon.es/ÁCIDO-CÍTRICO-ANHIDRO-POLVO-Biodegradable/dp/B08XXWDBK7", freq:"Pendente", cat:"Compras"},
+  {id:"t13", nome:"Fornos-ArvoresFruto_Encomendar Larvanem HB / nematodes", det:"Fertitienda.com ou controlbio.es — Larvanem 50 (Koppert, Heterorhabditis bacteriophora). Para larvas de gorgulho na Ameixeira Duo.", freq:"Pendente", cat:"Compras"},
+  {id:"t14", nome:"Fornos-ArvoresFruto_Comprar Calda Bordalesa", det:"Necessária: Nectarina, Cerejeira Burjat, Cerejeira Branca, Pereira Duo, Ameixeira Duo.", freq:"Pendente", cat:"Compras"},
+];
+
+// ── TAREFAS helpers ───────────────────────
+function getTarefasEstado() {
+  const semana = getISOWeek();
+  const key = 'jardim_tarefas_' + semana;
+  try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) { return {}; }
+}
+
+function saveTarefasEstado(estado) {
+  const semana = getISOWeek();
+  const key = 'jardim_tarefas_' + semana;
+  localStorage.setItem(key, JSON.stringify(estado));
+}
+
+function getISOWeek() {
+  const d = new Date();
+  const jan4 = new Date(d.getFullYear(), 0, 4);
+  const startOfWeek = new Date(jan4);
+  startOfWeek.setDate(jan4.getDate() - (jan4.getDay() || 7) + 1);
+  const diff = d - startOfWeek;
+  return d.getFullYear() + '-W' + String(Math.ceil((diff / 86400000 + 1) / 7)).padStart(2,'0');
+}
+
+function toggleTarefa(tid) {
+  const estado = getTarefasEstado();
+  estado[tid] = !estado[tid];
+  saveTarefasEstado(estado);
+  renderTarefas();
+}
+
+function resetTarefas() {
+  if (!confirm('Limpar todas as tarefas desta semana?')) return;
+  const semana = getISOWeek();
+  localStorage.removeItem('jardim_tarefas_' + semana);
+  renderTarefas();
+}
+
+function mostrarTarefas() {
+  setView('viewTarefas', '✅ Tarefas');
+  document.getElementById('navT').classList.add('active');
+  document.getElementById('navD').classList.remove('active');
+  document.getElementById('navS').classList.remove('active');
+  document.getElementById('navI').classList.remove('active');
+  renderTarefas();
+}
+
+function renderTarefas() {
+  const estado = getTarefasEstado();
+  const semana = getISOWeek();
+  const total = TAREFAS_BASE.length;
+  const feitas = TAREFAS_BASE.filter(t => estado[t.id]).length;
+
+  const cats = ['Tratamento','Rega','Nutrição','Monitorização','Compras'];
+  const catsHTML = cats.map(cat => {
+    const tarefas = TAREFAS_BASE.filter(t => t.cat === cat);
+    if (!tarefas.length) return '';
+    return `<div class="semana-label">${catIcon(cat)} ${cat}</div>` +
+      tarefas.map(t => {
+        const feita = !!estado[t.id];
+        return `<div class="tarefa-card ${feita?'feita':''}" onclick="toggleTarefa('${t.id}')">
+          <div class="tarefa-check"></div>
+          <div class="tarefa-info">
+            <div class="tarefa-nome">${t.nome.replace('Fornos-ArvoresFruto_','')}</div>
+            <div class="tarefa-det">${t.freq} · ${t.det}</div>
+          </div>
+        </div>`;
+      }).join('');
+  }).join('');
+
+  document.getElementById('tarefasConteudo').innerHTML = `
+    <div class="tarefas-resumo">
+      <div class="tar-stat"><div class="tar-stat-num ok">${feitas}</div><div class="tar-stat-label">Concluídas</div></div>
+      <div class="tar-stat"><div class="tar-stat-num pend">${total-feitas}</div><div class="tar-stat-label">Pendentes</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--cinza);text-align:center;margin-bottom:4px">Semana ${semana}</div>
+    ${catsHTML}
+    <button class="btn-reset-tarefas" onclick="resetTarefas()">↺ Limpar semana</button>`;
+}
+
+function catIcon(cat) {
+  return {Tratamento:'💊',Rega:'💧',Nutrição:'🌱',Monitorização:'📊',Compras:'🛒'}[cat]||'';
+}
+
 // INIT
 document.getElementById('novoData').value = new Date().toISOString().split('T')[0];
 renderDashboard();
 </script>
 </body>
 </html>
+
 
 
 
