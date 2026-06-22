@@ -186,25 +186,17 @@ input[type="file"] { display:none; }
 <!-- Modal novo registo -->
 <div class="overlay" id="modalOverlay">
   <div class="modal">
-    <div class="modal-title">Novo Registo</div>
+    <div class="modal-title">Nova Observação</div>
     <div class="fgrp"><label class="flabel">Data</label><input type="date" class="finput" id="novoData"></div>
-    <div class="fgrp"><label class="flabel">Diagnóstico</label><textarea class="ftarea" id="novoDiag" placeholder="Sintomas e diagnóstico..."></textarea></div>
-    <div class="fgrp"><label class="flabel">Tratamento</label><textarea class="ftarea" id="novoTrat" placeholder="Produtos, doses, método..."></textarea></div>
+    <div class="fgrp"><label class="flabel">pH medido</label><input type="text" class="finput" id="novoPH" placeholder="Ex: 6.0 ou 5.5-6.0"></div>
+    <div class="fgrp"><label class="flabel">Notas / Observações</label><textarea class="ftarea" id="novoDiag" placeholder="O que fizeste, o que viste, dúvidas..."></textarea></div>
     <div class="fgrp">
-      <label class="flabel">Urgência</label>
-      <select class="fselect" id="novaUrg">
-        <option value="baixo">🟢 OK / Baixa</option>
-        <option value="medio" selected>🟡 Média</option>
-        <option value="urgente">🔴 Urgente</option>
-        <option value="critico">🚨 Crítico</option>
-      </select>
-    </div>
-    <div class="fgrp">
-      <label class="flabel">Fotos (pré-visualização local)</label>
+      <label class="flabel">Fotos</label>
       <div class="fotos-preview" id="fotosPreview"></div>
       <button class="btn-novo" style="background:var(--verde-m);margin-top:0" onclick="document.getElementById('fileIn').click()">📷 Selecionar fotos</button>
       <input type="file" id="fileIn" multiple accept="image/*" onchange="previewFotos(this)">
     </div>
+    <div class="info-box" style="margin-bottom:12px">💬 Partilha as fotos e notas com o Claude para diagnóstico e tratamento.</div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
       <button class="btn-save" onclick="guardarRegisto()">Guardar</button>
@@ -539,8 +531,7 @@ function abrirModal(id) {
   fotosLocais = [];
   document.getElementById('fotosPreview').innerHTML = '';
   document.getElementById('novoDiag').value = '';
-  document.getElementById('novoTrat').value = '';
-  document.getElementById('novaUrg').value = 'medio';
+  document.getElementById('novoPH').value = '';
   document.getElementById('novoData').value = new Date().toISOString().split('T')[0];
   document.getElementById('modalOverlay').classList.add('open');
 }
@@ -563,14 +554,16 @@ function previewFotos(input) {
 }
 
 function guardarRegisto() {
-  const diag = document.getElementById('novoDiag').value.trim();
-  if (!diag) { alert('Adiciona pelo menos o diagnóstico.'); return; }
+  const notas = document.getElementById('novoDiag').value.trim();
+  const ph = document.getElementById('novoPH').value.trim();
+  if (!notas && !ph) { alert('Adiciona pelo menos uma nota ou o pH medido.'); return; }
+  const diagTxt = (ph ? 'pH medido: ' + ph + '. ' : '') + (notas || '');
   const novo = {
     id: 'r'+modalId+'_'+Date.now(),
     data: document.getElementById('novoData').value,
-    diagnostico: diag,
-    tratamento: document.getElementById('novoTrat').value.trim(),
-    urgencia: document.getElementById('novaUrg').value,
+    diagnostico: diagTxt,
+    tratamento: '⏳ Aguarda diagnóstico do Claude.',
+    urgencia: 'medio',
     fotos: []
   };
   const local = JSON.parse(localStorage.getItem('jardim_local')||'{}');
@@ -860,6 +853,7 @@ renderDashboard();
 </script>
 </body>
 </html>
+
 
 
 
