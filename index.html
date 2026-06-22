@@ -200,8 +200,9 @@ input[type="file"] { display:none; }
       <div class="fotos-preview" id="fotosPreview"></div>
       <button class="btn-novo" style="background:var(--verde-m);margin-top:0" onclick="document.getElementById('fileIn').click()">📷 Selecionar fotos</button>
       <input type="file" id="fileIn" multiple accept="image/*" onchange="previewFotos(this)">
+      <div id="uploadStatus" style="font-size:12px;color:var(--cinza);margin-top:6px;display:none"></div>
     </div>
-    <div class="info-box" style="margin-bottom:12px">💬 Partilha as fotos e notas com o Claude para diagnóstico e tratamento.</div>
+    <div class="info-box" style="margin-bottom:12px">💬 As fotos são carregadas para o repositório ao guardar. Partilha o registo com o Claude para diagnóstico.</div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
       <button class="btn-save" onclick="guardarRegisto()">Guardar</button>
@@ -556,8 +557,7 @@ async function renderDetalhe(id) {
     <div class="sec-title">Historial <span>${regs.length} registo${regs.length!==1?'s':''}</span></div>
     ${regsHTML}
     <button class="btn-novo" onclick="abrirModal(${id})">+ Novo Registo</button>
-    <button class="btn-novo" style="background:var(--verde-m);margin-top:8px" onclick="document.getElementById('uploadFotosIn').click()">📷 Carregar Fotos</button>
-    <input type="file" id="uploadFotosIn" multiple accept="image/*" onchange="uploadFotosGH(this,${id})">`;
+`;
 }
 
 function toggleReg(head) {
@@ -596,11 +596,51 @@ function previewFotos(input) {
   });
 }
 
-function guardarRegisto() {
+async function guardarRegisto() {
   const notas = document.getElementById('novoDiag').value.trim();
   const ph = document.getElementById('novoPH').value.trim();
   if (!notas && !ph) { alert('Adiciona pelo menos uma nota ou o pH medido.'); return; }
   const diagTxt = (ph ? 'pH medido: ' + ph + '. ' : '') + (notas || '');
+
+  // Upload photos first if any selected
+  const fileIn = document.getElementById('fileIn');
+  const files = Array.from(fileIn.files || []);
+  const status = document.getElementById('uploadStatus');
+
+  if (files.length > 0) {
+    status.style.display = 'block';
+    status.textContent = 'A carregar fotos...';
+    const pasta = {1:'01-nectarina',2:'02-laranjeira',3:'03-mandarino',4:'04-kumquat',
+      5:'05-groselha-negra',6:'06-romanzeira',7:'07-figueira',8:'08-castanheiro',
+      9:'09-cerejeira-burjat',10:'10-cerejeira-branca',11:'11-pereira-duo',
+      12:'12-macieira-duo',13:'13-ameixeira-duo'}[modalId];
+    // Get next index
+    let nextIdx = 1;
+    try {
+      const r = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/fotos/${pasta}`,
+        {headers:{Authorization:`token ${GH_TOKEN}`}});
+      if (r.ok) {
+        const ex = await r.json();
+        nextIdx = ex.filter(f => /\.jpg$/i.test(f.name)).length + 1;
+      }
+    } catch(e) {}
+    let done = 0;
+    for (const file of files) {
+      const fname = `img${String(nextIdx).padStart(2,'0')}.jpg`;
+      const resized = await resizeImage(file, 900, 78);
+      try {
+        await fetch(`https://api.github.com/repos/${GH_REPO}/contents/fotos/${pasta}/${fname}`, {
+          method:'PUT',
+          headers:{Authorization:`token ${GH_TOKEN}`,'Content-Type':'application/json'},
+          body:JSON.stringify({message:`foto: ${pasta}/${fname}`,content:resized})
+        });
+        nextIdx++; done++;
+        status.textContent = `A carregar fotos... ${done}/${files.length}`;
+      } catch(e) { console.error(e); }
+    }
+    status.textContent = `✅ ${done} foto${done!==1?'s':''} carregada${done!==1?'s':''}!`;
+  }
+
   const novo = {
     id: 'r'+modalId+'_'+Date.now(),
     data: document.getElementById('novoData').value,
@@ -1061,6 +1101,7 @@ renderDashboard();
 </script>
 </body>
 </html>
+
 
 
 
