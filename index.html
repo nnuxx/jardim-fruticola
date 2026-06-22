@@ -198,6 +198,7 @@ input[type="file"] { display:none; }
     </div>
     <div class="fgrp"><label class="flabel">Quantidade / Unidade</label><input type="text" class="finput" id="npQtd" placeholder="Ex: 1L, 500g, 5 unid."></div>
     <div class="fgrp"><label class="flabel">Link de compra (opcional)</label><input type="url" class="finput" id="npLink" placeholder="https://..."></div>
+    <div class="fgrp"><label class="flabel">URL da foto do produto (opcional)</label><input type="url" class="finput" id="npFoto" placeholder="https://... (link directo para imagem)"></div>
     <div class="fgrp"><label class="flabel">Produtos que substitui nos tratamentos (opcional)</label><input type="text" class="finput" id="npKeys" placeholder="Ex: neem, bordalesa"></div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="fecharModalProd()">Cancelar</button>
@@ -252,23 +253,24 @@ const REGISTOS_BASE = {
 // keys: palavras-chave que aparecem nos campos "tratamento" — usado para detetar bloqueios
 // ═══════════════════════════════════════════
 const PRODUTOS_BASE = [
-  {id:"p01", nome:"Fertibono Neem Oil", cat:"Inseticida", qtd:"1L", disponivel:true, link:"https://www.amazon.es/dp/B07QJV1YP3", keys:["neem"]},
-  {id:"p02", nome:"Sabão Potássico", cat:"Inseticida", qtd:"disponível", disponivel:true, link:"", keys:["sabão potássico","sabao potassico"]},
-  {id:"p03", nome:"Calda Bordalesa", cat:"Fungicida", qtd:"⚠️ Por encomendar", disponivel:false, link:"", keys:["bordalesa","calda bordalesa"]},
-  {id:"p04", nome:"CANNA Mono Hierro", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"https://www.amazon.es/dp/B00JH3NZQE", keys:["canna mono hierro","mono hierro"]},
-  {id:"p05", nome:"Flower Ferroflower", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"https://www.amazon.es/dp/B08C3NJTH3", keys:["ferroflower"]},
-  {id:"p06", nome:"Plagron Supermix", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"https://www.amazon.es/dp/B07D3GFV4W", keys:["supermix","plagron supermix"]},
-  {id:"p07", nome:"NPK 6-15-12", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"", keys:["npk 6-15-12","npk"]},
-  {id:"p08", nome:"Ferramol", cat:"Barreira", qtd:"disponível", disponivel:true, link:"https://www.amazon.es/dp/B00AOM5EDQ", keys:["ferramol"]},
-  {id:"p09", nome:"Fita de Cobre", cat:"Barreira", qtd:"disponível", disponivel:true, link:"", keys:["fita de cobre","copper"]},
-  {id:"p10", nome:"Cola Entomológica", cat:"Barreira", qtd:"disponível", disponivel:true, link:"", keys:["cola entomológica","cola entomologica"]},
-  {id:"p11", nome:"Ácido Cítrico", cat:"Acidificante", qtd:"⚠️ Por comprar", disponivel:false, link:"", keys:["ácido cítrico","acido citrico"]},
-  {id:"p12", nome:"Ácido Bórico (Dimor 500g)", cat:"Inseticida", qtd:"500g", disponivel:true, link:"https://www.farmaciass.pt", keys:["bórico","borico","dimor"]},
-  {id:"p13", nome:"Húmus Líquido Siro", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"", keys:["húmus líquido","humus liquido","siro"]},
-  {id:"p14", nome:"Steinernema kraussei (nematodes)", cat:"Nematoide", qtd:"⚠️ Por encomendar", disponivel:false, link:"https://www.amazon.es/s?k=steinernema+kraussei", keys:["steinernema","nematodes","nematode"]},
-  {id:"p15", nome:"Bicarbonato de Sódio", cat:"Fungicida", qtd:"Por confirmar", disponivel:false, link:"", keys:["bicarbonato"]},
-  {id:"p16", nome:"Neudorff Azet Fertilizante Cítricos", cat:"Nutrição", qtd:"⚠️ Esgotado", disponivel:false, link:"", keys:["neudorff","azet"]},
-  {id:"p17", nome:"KB Fertilizante Citrinos & Mediterrâneas", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"", keys:["kb fertilizante","guano marinho"]},
+  {id:"p01", nome:"Fertibono Neem Oil", cat:"Inseticida", qtd:"1L", disponivel:true, link:"https://www.amazon.es/dp/B07QJV1YP3", foto:"", keys:["neem"]},
+  {id:"p02", nome:"Sabão Potássico", cat:"Inseticida", qtd:"disponível", disponivel:true, link:"", foto:"", keys:["sabão potássico","sabao potassico"]},
+  {id:"p03", nome:"Calda Bordalesa", cat:"Fungicida", qtd:"⚠️ Por encomendar", disponivel:false, link:"", foto:"", keys:["bordalesa","calda bordalesa"]},
+  {id:"p04", nome:"CANNA Mono Hierro", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"https://www.amazon.es/dp/B00JH3NZQE", foto:"", keys:["canna mono hierro","mono hierro"]},
+  {id:"p05", nome:"Flower Ferroflower", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"https://www.amazon.es/dp/B08C3NJTH3", foto:"", keys:["ferroflower"]},
+  {id:"p06", nome:"Plagron Supermix", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"https://www.amazon.es/dp/B07D3GFV4W", foto:"", keys:["supermix","plagron supermix"]},
+  {id:"p07", nome:"NPK 6-15-12", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"", foto:"", keys:["npk 6-15-12","npk"]},
+  {id:"p08", nome:"Ferramol", cat:"Barreira", qtd:"disponível", disponivel:true, link:"https://www.amazon.es/dp/B00AOM5EDQ", foto:"", keys:["ferramol"]},
+  {id:"p09", nome:"Fita de Cobre", cat:"Barreira", qtd:"disponível", disponivel:true, link:"", foto:"", keys:["fita de cobre","copper"]},
+  {id:"p10", nome:"Cola Entomológica", cat:"Barreira", qtd:"disponível", disponivel:true, link:"", foto:"", keys:["cola entomológica","cola entomologica"]},
+  {id:"p11", nome:"Ácido Cítrico", cat:"Acidificante", qtd:"⚠️ Por comprar", disponivel:false, link:"", foto:"", keys:["ácido cítrico","acido citrico"]},
+  {id:"p18", nome:"Ácido Nítrico", cat:"Acidificante", qtd:"disponível", disponivel:true, link:"", foto:"", keys:["ácido nítrico","acido nitrico","nitrico"]},
+  {id:"p12", nome:"Ácido Bórico (Dimor 500g)", cat:"Inseticida", qtd:"500g", disponivel:true, link:"https://www.farmaciass.pt", foto:"", keys:["bórico","borico","dimor"]},
+  {id:"p13", nome:"Húmus Líquido Siro", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"", foto:"", keys:["húmus líquido","humus liquido","siro"]},
+  {id:"p14", nome:"Steinernema kraussei (nematodes)", cat:"Nematoide", qtd:"⚠️ Por encomendar", disponivel:false, link:"https://www.amazon.es/s?k=steinernema+kraussei", foto:"", keys:["steinernema","nematodes","nematode"]},
+  {id:"p15", nome:"Bicarbonato de Sódio", cat:"Fungicida", qtd:"Por confirmar", disponivel:false, link:"", foto:"", keys:["bicarbonato"]},
+  {id:"p16", nome:"Neudorff Azet Fertilizante Cítricos", cat:"Nutrição", qtd:"⚠️ Esgotado", disponivel:false, link:"", foto:"", keys:["neudorff","azet"]},
+  {id:"p17", nome:"KB Fertilizante Citrinos & Mediterrâneas", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"", foto:"", keys:["kb fertilizante","guano marinho"]},
 ];
 
 const REPO = 'nnuxx/Fornos-ArvoresFruto';
@@ -563,13 +565,14 @@ function renderStock() {
   const catsHTML = cats.map(cat => {
     const catProds = prods.filter(p => p.cat === cat);
     return `<div class="cat-label">${cat}</div>` + catProds.map(p => `
-      <div class="prod-card ${p.disponivel?'':'esgotado'}">
+      <div class="prod-card ${p.disponivel?'':'esgotado'}" onclick="abrirDetalhesProd('${p.id}')">
+        ${p.foto?`<img src="${p.foto}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`:``}
         <div class="prod-info">
           <div class="prod-nome">${p.nome}</div>
-          <div class="prod-det">${p.qtd}${p.link?` · <a class="link-compra" href="${p.link}" target="_blank">🛒 Encomendar</a>`:''}</div>
+          <div class="prod-det">${p.qtd}${p.link?` · <a class="link-compra" href="${p.link}" target="_blank" onclick="event.stopPropagation()">🛒 Comprar</a>`:''}</div>
         </div>
         <div class="prod-acoes">
-          <button class="toggle-stock ${p.disponivel?'on':'off'}" onclick="toggleDisponivel('${p.id}')" title="${p.disponivel?'Marcar como esgotado':'Marcar como disponível'}"></button>
+          <button class="toggle-stock ${p.disponivel?'on':'off'}" onclick="event.stopPropagation();toggleDisponivel('${p.id}')" title="${p.disponivel?'Marcar como esgotado':'Marcar como disponível'}"></button>
           <span style="font-size:10px;color:var(--cinza)">${p.disponivel?'Em stock':'Esgotado'}</span>
         </div>
       </div>`).join('');
@@ -590,26 +593,49 @@ function abrirModalProd() {
   document.getElementById('npNome').value = '';
   document.getElementById('npQtd').value = '';
   document.getElementById('npLink').value = '';
+  document.getElementById('npFoto').value = '';
   document.getElementById('npKeys').value = '';
+  delete document.getElementById('modalProdOverlay').dataset.editId;
   document.getElementById('modalProdOverlay').classList.add('open');
 }
 
 function fecharModalProd() { document.getElementById('modalProdOverlay').classList.remove('open'); }
 
+function abrirDetalhesProd(pid) {
+  const prods = getProdutos();
+  const p = prods.find(x => x.id === pid);
+  if (!p) return;
+  document.getElementById('npNome').value = p.nome;
+  document.getElementById('npCat').value = p.cat;
+  document.getElementById('npQtd').value = p.qtd;
+  document.getElementById('npLink').value = p.link || '';
+  document.getElementById('npFoto').value = p.foto || '';
+  document.getElementById('npKeys').value = (p.keys||[]).join(', ');
+  // Store pid for update
+  document.getElementById('modalProdOverlay').dataset.editId = pid;
+  document.getElementById('modalProdOverlay').classList.add('open');
+}
+
 function guardarProduto() {
   const nome = document.getElementById('npNome').value.trim();
   if (!nome) { alert('Nome obrigatório.'); return; }
   const prods = getProdutos();
-  const novo = {
-    id: 'pu_' + Date.now(),
+  const editId = document.getElementById('modalProdOverlay').dataset.editId;
+  const dados = {
     nome,
     cat: document.getElementById('npCat').value,
     qtd: document.getElementById('npQtd').value.trim() || 'disponível',
-    disponivel: true,
     link: document.getElementById('npLink').value.trim(),
+    foto: document.getElementById('npFoto').value.trim(),
     keys: document.getElementById('npKeys').value.split(',').map(k => k.trim().toLowerCase()).filter(Boolean)
   };
-  prods.push(novo);
+  if (editId) {
+    const idx = prods.findIndex(x => x.id === editId);
+    if (idx !== -1) Object.assign(prods[idx], dados);
+    delete document.getElementById('modalProdOverlay').dataset.editId;
+  } else {
+    prods.push({id: 'pu_' + Date.now(), disponivel: true, ...dados});
+  }
   saveProdutos(prods);
   fecharModalProd();
   renderStock();
@@ -656,6 +682,7 @@ renderDashboard();
 </script>
 </body>
 </html>
+
 
 
 
