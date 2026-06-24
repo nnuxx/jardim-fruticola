@@ -384,11 +384,12 @@ let filtroAtivo = 'todos';
 
 // ── PRODUTOS — helpers ────────────────────
 // stock.json
+const GH_TOKEN = GH_TOKEN;
+const GH_REPO  = 'nnuxx/Fornos-ArvoresFruto';
 let _stockCache = null, _stockSHA = null;
 async function carregarStock() {
   try {
-    const GHT = 'ghp_zOiDOg'+'rLGOBfCd9hNKuedG6z8ClQgc1jmksA';
-    const r = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/stock.json`,{headers:{Authorization:`token ${GHT}`,'Cache-Control':'no-cache'}});
+    const r = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/stock.json`,{headers:{Authorization:`token ${GH_TOKEN}`,'Cache-Control':'no-cache'}});
     if (!r.ok) throw new Error(r.status);
     const d = await r.json(); _stockSHA = d.sha;
     _stockCache = JSON.parse(atob(d.content.replace(/\n/g,'')));
@@ -396,9 +397,8 @@ async function carregarStock() {
   } catch(e) { console.warn('stock.json:',e.message); if (!_stockCache) _stockCache={}; }
 }
 async function guardarStock() {
-  const GHT = 'ghp_zOiDOg'+'rLGOBfCd9hNKuedG6z8ClQgc1jmksA';
   const content = btoa(unescape(encodeURIComponent(JSON.stringify(_stockCache,null,2))));
-  const r = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/stock.json`,{method:'PUT',headers:{Authorization:`token ${GHT}`,'Content-Type':'application/json'},body:JSON.stringify({message:'stock: update via app',content,sha:_stockSHA})});
+  const r = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/stock.json`,{method:'PUT',headers:{Authorization:`token ${GH_TOKEN}`,'Content-Type':'application/json'},body:JSON.stringify({message:'stock: update via app',content,sha:_stockSHA})});
   if (!r.ok) throw new Error(await r.text());
   const d = await r.json(); _stockSHA = d.content.sha;
 }
@@ -417,7 +417,12 @@ async function setEstado(pid, estado) {
   if(!_stockCache)_stockCache={};
   if(!_stockCache[pid])_stockCache[pid]={historico:[]};
   _stockCache[pid].estado=estado;
-  try{await guardarStock();}catch(e){console.error(e);}
+  try{
+    await guardarStock();
+  }catch(e){
+    alert('Erro ao guardar stock: '+e.message);
+    return;
+  }
   renderStock();
 }
 
@@ -1050,8 +1055,6 @@ function toggleCapa() {
 }
 
 // ── UPLOAD FOTOS PARA GITHUB ─────────────
-const GH_TOKEN = 'ghp_DcroDx' + 'Oaf0Hwi2ZVOAOStQNBjQViWj2MZBSY';
-const GH_REPO  = 'nnuxx/Fornos-ArvoresFruto';
 
 async function uploadFotosGH(input, arvoreId) {
   const files = Array.from(input.files);
