@@ -430,13 +430,30 @@ async function setEstado(pid, estado) {
   if(!_stockCache)_stockCache={};
   if(!_stockCache[pid])_stockCache[pid]={historico:[]};
   _stockCache[pid].estado=estado;
-  try{
+  mostrarToast('A guardar...', '#666');
+  try {
     await guardarStock();
-  }catch(e){
-    alert('Erro ao guardar stock: '+e.message);
-    return;
+    mostrarToast('✅ Guardado no GitHub', 'var(--verde-m)');
+  } catch(e) {
+    mostrarToast('❌ Erro: '+e.message, 'var(--vermelho)');
+    console.error('guardarStock error:', e);
   }
   renderStock();
+}
+
+function mostrarToast(msg, cor) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;color:#fff;z-index:999;transition:opacity 0.3s;white-space:nowrap;font-family:DM Sans,sans-serif';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.background = cor;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.style.opacity = '0', 2500);
 }
 
 function toggleDisponivel(pid) {
@@ -1200,5 +1217,6 @@ renderDashboard();
 </script>
 </body>
 </html>
+
 
 
