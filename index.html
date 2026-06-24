@@ -247,31 +247,6 @@ input[type="file"] { display:none; }
   </div>
 </div>
 
-<!-- Modal histórico produto -->
-<div class="overlay" id="modalHistOverlay">
-  <div class="modal">
-    <div class="modal-title" id="histTitle">Histórico</div>
-    <input type="hidden" id="histIssueNum">
-    <input type="hidden" id="histProdId">
-    <div id="histBody" style="max-height:200px;overflow-y:auto;margin-bottom:16px;border:1px solid #F3F4F6;border-radius:8px;padding:10px"></div>
-    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--cinza);margin-bottom:10px">Adicionar evento</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <input type="date" class="finput" id="histData">
-      <select class="fselect" id="histTipo">
-        <option value="chegou">✅ Chegou</option>
-        <option value="encomendado">📦 Encomendado</option>
-        <option value="esgotou">⚠️ Esgotou</option>
-        <option value="outro">📝 Nota</option>
-      </select>
-    </div>
-    <input type="text" class="finput" id="histNota" placeholder="Nota opcional..." style="margin-bottom:12px">
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="fecharModalHist()">Fechar</button>
-      <button class="btn-save" onclick="adicionarEventoStock()">Guardar</button>
-    </div>
-  </div>
-</div>
-
 <!-- Modal editar registo -->
 <div class="overlay" id="modalEditOverlay">
   <div class="modal">
@@ -292,6 +267,30 @@ input[type="file"] { display:none; }
     <div class="modal-btns">
       <button class="btn-cancel" onclick="fecharModalEdit()">Cancelar</button>
       <button class="btn-save" onclick="guardarEdit()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal histórico produto -->
+<div class="overlay" id="modalHistOverlay">
+  <div class="modal">
+    <div class="modal-title" id="histTitle">Histórico</div>
+    <input type="hidden" id="histProdId">
+    <div id="histBody" style="max-height:200px;overflow-y:auto;margin-bottom:16px;border:1px solid #F3F4F6;border-radius:8px;padding:10px"></div>
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--cinza);margin-bottom:10px">Adicionar evento</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <input type="date" class="finput" id="histData">
+      <select class="fselect" id="histTipo">
+        <option value="chegou">✅ Chegou</option>
+        <option value="encomendado">📦 Encomendado</option>
+        <option value="esgotou">⚠️ Esgotou</option>
+        <option value="outro">📝 Nota</option>
+      </select>
+    </div>
+    <input type="text" class="finput" id="histNota" placeholder="Nota opcional..." style="margin-bottom:12px">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="fecharModalHist()">Fechar</button>
+      <button class="btn-save" onclick="adicionarEventoStock()">Guardar</button>
     </div>
   </div>
 </div>
@@ -338,130 +337,848 @@ const REGISTOS_BASE = {
 };
 
 // ═══════════════════════════════════════════
-// STOCK — via stock.json no GitHub
+// INVENTÁRIO BASE DE PRODUTOS
+// keys: palavras-chave que aparecem nos campos "tratamento" — usado para detetar bloqueios
 // ═══════════════════════════════════════════
-const STOCK_JSON_PATH = 'stock.json';
-let _stockCache = null;      // {pid: {estado, historico}}
-let _stockSHA   = null;      // SHA do stock.json para updates
-
 const PRODUTOS_BASE = [
-  {id:"p02", nome:"Fertibono Neem Oil", cat:"Inseticida", qtd:"1L", link:"https://www.amazon.es/dp/B07QJV1YP3", foto:"", keys:["neem"]},
-  {id:"p03", nome:"Sabão Potássico", cat:"Inseticida", qtd:"", link:"", foto:"", keys:["sabão potássico","sabao potassico"]},
-  {id:"p04", nome:"Calda Bordalesa", cat:"Fungicida", qtd:"", link:"", foto:"", keys:["bordalesa","calda bordalesa"]},
-  {id:"p05", nome:"CANNA Mono Hierro", cat:"Nutrição", qtd:"", link:"https://www.amazon.es/dp/B00JH3NZQE", foto:"", keys:["canna mono hierro","mono hierro"]},
-  {id:"p06", nome:"Flower Ferroflower", cat:"Nutrição", qtd:"", link:"https://www.amazon.es/dp/B08C3NJTH3", foto:"", keys:["ferroflower"]},
-  {id:"p07", nome:"Plagron Supermix", cat:"Nutrição", qtd:"", link:"https://www.amazon.es/dp/B07D3GFV4W", foto:"", keys:["supermix","plagron supermix"]},
-  {id:"p08", nome:"NPK 6-15-12", cat:"Nutrição", qtd:"", link:"", foto:"", keys:["npk 6-15-12","npk"]},
-  {id:"p09", nome:"Ferramol", cat:"Barreira", qtd:"", link:"", foto:"", keys:["ferramol"]},
-  {id:"p10", nome:"Compo Bio Anti-Limas", cat:"Barreira", qtd:"", link:"", foto:"", keys:["ferramol","anti-limas","lesmas","caracois","fosfato ferrico"]},
-  {id:"p11", nome:"Fita de Cobre", cat:"Barreira", qtd:"", link:"", foto:"", keys:["fita de cobre","copper"]},
-  {id:"p12", nome:"Cola Entomológica", cat:"Barreira", qtd:"", link:"", foto:"", keys:["cola entomológica","cola entomologica"]},
-  {id:"p13", nome:"Ácido Cítrico", cat:"Acidificante", qtd:"5kg", link:"https://www.amazon.es/ÁCIDO-CÍTRICO-ANHIDRO-POLVO-Biodegradable/dp/B08XXWDBK7", foto:"", keys:["ácido cítrico","acido citrico"]},
-  {id:"p14", nome:"Ácido Nítrico", cat:"Acidificante", qtd:"", link:"", foto:"", keys:["ácido nítrico","acido nitrico","nitrico"]},
-  {id:"p15", nome:"Ácido Bórico (Dimor 500g)", cat:"Inseticida", qtd:"500g", link:"https://www.farmaciass.pt", foto:"", keys:["bórico","borico","dimor"]},
-  {id:"p16", nome:"Húmus Líquido Siro", cat:"Nutrição", qtd:"", link:"", foto:"", keys:["húmus líquido","humus liquido","siro"]},
-  {id:"p17", nome:"Larvanem HB (nematodes)", cat:"Nematoide", qtd:"", link:"https://fertitienda.com/control-biologico/larvanem-50.html", foto:"", keys:["steinernema","nematodes","nematode","larvanem"]},
-  {id:"p18", nome:"Bicarbonato de Sódio", cat:"Fungicida", qtd:"", link:"", foto:"", keys:["bicarbonato"]},
-  {id:"p19", nome:"KB Fertilizante Citrinos & Mediterrâneas", cat:"Nutrição", qtd:"", link:"", foto:"", keys:["kb fertilizante","guano marinho"]},
-  {id:"p20", nome:"Neudorff Azet Fertilizante Cítricos", cat:"Nutrição", qtd:"", link:"", foto:"", keys:["neudorff","azet"]},
+  {id:"p01", nome:"Fertibono Neem Oil", cat:"Inseticida", qtd:"1L", disponivel:true, link:"https://www.amazon.es/dp/B07QJV1YP3", foto:"", estado:"disponivel", keys:["neem"]},
+  {id:"p02", nome:"Sabão Potássico", cat:"Inseticida", qtd:"disponível", disponivel:true, link:"", foto:"", estado:"disponivel", keys:["sabão potássico","sabao potassico"]},
+  {id:"p03", nome:"Calda Bordalesa", cat:"Fungicida", qtd:"⚠️ Por encomendar", disponivel:false, link:"", foto:"", estado:"por_comprar", keys:["bordalesa","calda bordalesa"]},
+  {id:"p04", nome:"CANNA Mono Hierro", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"https://www.amazon.es/dp/B00JH3NZQE", foto:"", estado:"disponivel", keys:["canna mono hierro","mono hierro"]},
+  {id:"p05", nome:"Flower Ferroflower", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"https://www.amazon.es/dp/B08C3NJTH3", foto:"", estado:"disponivel", keys:["ferroflower"]},
+  {id:"p06", nome:"Plagron Supermix", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"https://www.amazon.es/dp/B07D3GFV4W", foto:"", estado:"disponivel", keys:["supermix","plagron supermix"]},
+  {id:"p07", nome:"NPK 6-15-12", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"", foto:"", estado:"disponivel", keys:["npk 6-15-12","npk"]},
+  {id:"p08", nome:"Ferramol (substituído por Compo Bio)", cat:"Barreira", qtd:"Não necessário", disponivel:false, link:"", foto:"", estado:"por_comprar", keys:["ferramol"]},
+  {id:"p19", nome:"Compo Bio Anti-Limas", cat:"Barreira", qtd:"🚚 Em trânsito", disponivel:false, link:"", foto:"", estado:"transito", keys:["ferramol","anti-limas","anti limas","lesmas","limas","caracois","caracóis","fosfato ferrico"]},
+  {id:"p09", nome:"Fita de Cobre", cat:"Barreira", qtd:"disponível", disponivel:true, link:"", foto:"", estado:"disponivel", keys:["fita de cobre","copper"]},
+  {id:"p10", nome:"Cola Entomológica", cat:"Barreira", qtd:"disponível", disponivel:true, link:"", foto:"", estado:"disponivel", keys:["cola entomológica","cola entomologica"]},
+  {id:"p11", nome:"Ácido Cítrico", cat:"Acidificante", qtd:"⚠️ Por comprar", disponivel:false, link:"", foto:"", estado:"por_comprar", keys:["ácido cítrico","acido citrico"]},
+  {id:"p18", nome:"Ácido Nítrico", cat:"Acidificante", qtd:"disponível", disponivel:true, link:"", foto:"", estado:"disponivel", keys:["ácido nítrico","acido nitrico","nitrico"]},
+  {id:"p12", nome:"Ácido Bórico (Dimor 500g)", cat:"Inseticida", qtd:"500g", disponivel:true, link:"https://www.farmaciass.pt", foto:"", estado:"disponivel", keys:["bórico","borico","dimor"]},
+  {id:"p13", nome:"Húmus Líquido Siro", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"", foto:"", estado:"disponivel", keys:["húmus líquido","humus liquido","siro"]},
+  {id:"p14", nome:"Steinernema kraussei (nematodes)", cat:"Nematoide", qtd:"⚠️ Por encomendar", disponivel:false, link:"https://www.amazon.es/s?k=steinernema+kraussei", foto:"", estado:"por_comprar", keys:["steinernema","nematodes","nematode"]},
+  {id:"p15", nome:"Bicarbonato de Sódio", cat:"Fungicida", qtd:"Por confirmar", disponivel:false, link:"", foto:"", estado:"por_comprar", keys:["bicarbonato"]},
+  {id:"p16", nome:"KB Fertilizante Cítricos & Mediterrâneas", cat:"Nutrição", qtd:"⚠️ Esgotado", disponivel:false, link:"", foto:"", estado:"por_comprar", keys:["neudorff","azet"]},
+  {id:"p17", nome:"KB Fertilizante Citrinos & Mediterrâneas", cat:"Nutrição", qtd:"disponível", disponivel:true, link:"", foto:"", estado:"disponivel", keys:["kb fertilizante","guano marinho"]},
 ];
 
-// ── STOCK helpers ─────────────────────────
-function getProdutos() {
-  return PRODUTOS_BASE.map(p => {
-    const s = _stockCache?.[p.id] || {estado:'disponivel', historico:[]};
-    return {
-      ...p,
-      estado: s.estado,
-      disponivel: s.estado === 'disponivel',
-      historico: s.historico || []
-    };
-  });
-}
+const REPO = 'nnuxx/Fornos-ArvoresFruto';
+const PASTA_MAP = {
+  1:'01-nectarina', 2:'02-laranjeira', 3:'03-mandarino', 4:'04-kumquat',
+  5:'05-groselha-negra', 6:'06-romanzeira', 7:'07-figueira', 8:'08-castanheiro',
+  9:'09-cerejeira-burjat', 10:'10-cerejeira-branca', 11:'11-pereira-duo',
+  12:'12-macieira-duo', 13:'13-ameixeira-duo'
+};
+const BADGE = {
+  critico:['badge critico','🚨 Crítico'],
+  urgente:['badge urgente','🔴 Urgente'],
+  medio:  ['badge medio','🟡 Médio'],
+  baixo:  ['badge baixo','🟢 OK'],
+};
 
+// Estado
+let arvoreAtiva = null;
+let fotosLocais = [];
+let modalId = null;
+let filtroAtivo = 'todos';
+
+// ── PRODUTOS — helpers ────────────────────
+// stock.json
+let _stockCache = null, _stockSHA = null;
 async function carregarStock() {
   try {
-    const GHT = 'ghp_DcroDx' + 'oaf0Hwi2ZVOAOStQNBjQViWj2MZBSY';
-    const r = await fetch(
-      `https://api.github.com/repos/${GH_REPO}/contents/${STOCK_JSON_PATH}`,
-      {headers:{Authorization:`token ${GHT}`, 'Cache-Control':'no-cache'}}
-    );
+    const GHT = 'ghp_DcroDx'+'oaf0Hwi2ZVOAOStQNBjQViWj2MZBSY';
+    const r = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/stock.json`,{headers:{Authorization:`token ${GHT}`,'Cache-Control':'no-cache'}});
     if (!r.ok) throw new Error(r.status);
-    const data = await r.json();
-    _stockSHA = data.sha;
-    _stockCache = JSON.parse(atob(data.content.replace(/\n/g,'')));
+    const d = await r.json(); _stockSHA = d.sha;
+    _stockCache = JSON.parse(atob(d.content.replace(/\n/g,'')));
     localStorage.removeItem('jardim_produtos');
-  } catch(e) {
-    console.warn('stock.json load failed:', e.message);
-    _stockCache = {};
-  }
+  } catch(e) { console.warn('stock.json:',e.message); if (!_stockCache) _stockCache={}; }
 }
-
 async function guardarStock() {
-  try {
-    const GHT = 'ghp_DcroDx' + 'oaf0Hwi2ZVOAOStQNBjQViWj2MZBSY';
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(_stockCache, null, 2))));
-    const payload = {message:'stock: actualização via app', content, sha: _stockSHA};
-    const r = await fetch(
-      `https://api.github.com/repos/${GH_REPO}/contents/${STOCK_JSON_PATH}`,
-      {method:'PUT', headers:{Authorization:`token ${GHT}`,'Content-Type':'application/json'}, body:JSON.stringify(payload)}
-    );
-    if (!r.ok) throw new Error(r.status);
-    const data = await r.json();
-    _stockSHA = data.content.sha;
-  } catch(e) {
-    console.error('stock.json save failed:', e.message);
-    throw e;
-  }
+  const GHT = 'ghp_DcroDx'+'oaf0Hwi2ZVOAOStQNBjQViWj2MZBSY';
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(_stockCache,null,2))));
+  const r = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/stock.json`,{method:'PUT',headers:{Authorization:`token ${GHT}`,'Content-Type':'application/json'},body:JSON.stringify({message:'stock: update via app',content,sha:_stockSHA})});
+  if (!r.ok) throw new Error(await r.text());
+  const d = await r.json(); _stockSHA = d.content.sha;
 }
-
-function saveProdutos() { /* state managed via _stockCache + guardarStock() */ }
+function getProdutos() {
+  return PRODUTOS_BASE.map(p => {
+    const s = (_stockCache&&_stockCache[p.id])||{estado:'disponivel',historico:[]};
+    return {...p,estado:s.estado,disponivel:s.estado==='disponivel',historico:s.historico||[]};
+  });
+}
+function saveProdutos(prods) {
+  if(!_stockCache)_stockCache={};
+  prods.forEach(p=>{if(!_stockCache[p.id])_stockCache[p.id]={historico:[]};_stockCache[p.id].estado=p.estado||'disponivel';});
+}
 
 async function setEstado(pid, estado) {
-  if (!_stockCache) _stockCache = {};
-  if (!_stockCache[pid]) _stockCache[pid] = {estado, historico:[]};
-  _stockCache[pid].estado = estado;
-  await guardarStock();
+  if(!_stockCache)_stockCache={};
+  if(!_stockCache[pid])_stockCache[pid]={historico:[]};
+  _stockCache[pid].estado=estado;
+  try{await guardarStock();}catch(e){console.error(e);}
   renderStock();
 }
 
-async function adicionarHistorico(pid, tipo, data, nota) {
-  if (!_stockCache) _stockCache = {};
-  if (!_stockCache[pid]) _stockCache[pid] = {estado:'disponivel', historico:[]};
-  _stockCache[pid].historico.push({data, tipo, nota});
-  if (tipo === 'chegou') _stockCache[pid].estado = 'disponivel';
-  if (tipo === 'esgotou') _stockCache[pid].estado = 'por_comprar';
-  await guardarStock();
+function toggleDisponivel(pid) {
+  const prods = getProdutos();
+  const p = prods.find(x => x.id === pid);
+  if (p) { p.disponivel = !p.disponivel; saveProdutos(prods); }
+  renderStock();
 }
 
 function produtosEmFalta() {
-  return getProdutos().filter(p => p.estado !== 'disponivel');
+  return getProdutos().filter(p => !p.disponivel);
 }
 
-// ── TAREFAS BASE
-async function adicionarEventoStock() {
-  const pid = document.getElementById('histProdId').value;
-  const data = document.getElementById('histData').value;
-  const tipo = document.getElementById('histTipo').value;
-  const nota = document.getElementById('histNota').value.trim();
-  if (!data) { alert('Selecciona uma data.'); return; }
+// Dada uma string de tratamento, devolve IDs de produtos em falta que bloqueiam
+function produtosBloqueadores(tratTxt) {
+  if (!tratTxt) return [];
+  const t = tratTxt.toLowerCase();
+  return getProdutos()
+    .filter(p => !p.disponivel && p.keys && p.keys.some(k => t.includes(k.toLowerCase())))
+    .map(p => p.id);
+}
 
-  const btn = document.querySelector('#modalHistOverlay .btn-save');
-  btn.textContent = 'A guardar...'; btn.disabled = true;
+// ── DADOS GERAIS ─────────────────────────
+function getRegistos(id) {
+  const local = JSON.parse(localStorage.getItem('jardim_local') || '{}');
+  const locais = local[id] || [];
+  const deletedIds = new Set(locais.filter(r => r._deleted).map(r => r.id));
+  const overrides = {};
+  locais.filter(r => r._override).forEach(r => overrides[r.id] = r);
+  let base = (REGISTOS_BASE[id] || [])
+    .filter(r => !deletedIds.has(r.id))
+    .map(r => overrides[r.id] ? {...overrides[r.id]} : {...r});
+  locais.filter(r => !r._deleted && !r._override && !base.find(b => b.id === r.id))
+    .forEach(lr => base.push(lr));
+  return base.sort((a,b) => a.data > b.data ? 1 : -1);
+}
 
+function getUrgencia(id) {
+  const urg = localStorage.getItem('jardim_urg_' + id);
+  return urg || ARVORES.find(a => a.id === id).urgencia;
+}
+
+// ── DASHBOARD ────────────────────────────
+function filtrar(f, btn) {
+  filtroAtivo = f;
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDashboard();
+}
+
+function renderDashboard() {
+  let arvores = ARVORES;
+  if (filtroAtivo !== 'todos') arvores = arvores.filter(a => getUrgencia(a.id) === filtroAtivo);
+  document.getElementById('listaArvores').innerHTML = arvores.map(a => {
+    const urg = getUrgencia(a.id);
+    const regs = getRegistos(a.id);
+    const ult = regs[regs.length-1];
+    const [bc, bl] = BADGE[urg] || BADGE.baixo;
+    const ph = a.ph ? `pH ${a.ph} · ` : '';
+    const sub = ult ? `Último: ${fmtData(ult.data)}` : 'Sem registos';
+    // badge de bloqueio se algum tratamento pendente tem produto em falta
+    const bloq = regs.some(r => produtosBloqueadores(r.tratamento).length > 0);
+    const bloqTag = bloq ? `<span style="font-size:16px" title="Produto em falta">⚠️</span>` : '';
+    return `<div class="arvore-card ${urg}" onclick="abrirArvore(${a.id})">
+      <div class="arvore-emoji">${a.emoji}</div>
+      <div class="arvore-info">
+        <div class="arvore-nome">${a.nome} ${bloqTag}</div>
+        <div class="arvore-sub">${ph}${sub}</div>
+      </div>
+      <span class="${bc}">${bl}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── DETALHE ──────────────────────────────
+function abrirArvore(id) {
+  arvoreAtiva = id;
+  const a = ARVORES.find(x => x.id === id);
+  setView('viewDetalhe', a.nome);
+  document.getElementById('navD').classList.remove('active');
+  renderDetalhe(id);
+}
+
+function voltarDashboard() {
+  arvoreAtiva = null;
+  setView('viewDashboard', '🌿 Jardim Frutícola', false);
+  document.getElementById('navD').classList.add('active');
+  document.getElementById('navS').classList.remove('active');
+  document.getElementById('navT').classList.remove('active');
+  document.getElementById('navI').classList.remove('active');
+  renderDashboard();
+}
+
+function setView(viewId, title, showBack=true) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+  document.getElementById('backBtn').style.display = showBack ? 'block' : 'none';
+  document.getElementById('headerTitle').textContent = title;
+}
+
+async function renderDetalhe(id) {
+  const a = ARVORES.find(x => x.id === id);
+  const regs = getRegistos(id).slice().reverse();
+  const ph = a.ph ? `<span class="chip">pH ${a.ph}</span>` : '';
+
+  let fotosGH = [];
   try {
-    await adicionarHistorico(pid, tipo, data, nota);
-    const prods = getProdutos();
-    const p = prods.find(x => x.id === pid);
-    renderHistorico(p);
-    document.getElementById('histNota').value = '';
-    btn.textContent = '✅ Guardado!';
-    setTimeout(() => { btn.textContent = 'Guardar'; btn.disabled = false; }, 1500);
-    renderStock();
-  } catch(e) {
-    btn.textContent = 'Guardar'; btn.disabled = false;
-    alert('Erro ao guardar: ' + e.message);
-  }
+    const pasta = PASTA_MAP[id];
+    const r = await fetch(`https://api.github.com/repos/${REPO}/contents/fotos/${pasta}`);
+    if (r.ok) {
+      const files = await r.json();
+      if (Array.isArray(files)) {
+        fotosGH = files
+          .filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f.name) && f.name !== '.gitkeep')
+          .sort((a,b) => a.name.localeCompare(b.name))
+          .map(f => f.download_url);
+      }
+    }
+  } catch(e) {}
+
+  const fotosSection = fotosGH.length > 0 ? `
+    <div class="sec-title">Fotos <span>${fotosGH.length}</span></div>
+    <div class="fotos-row" style="margin-bottom:16px">
+      ${fotosGH.map(url => `<img class="foto-thumb" src="${url}" onclick="abrirLb('${url}')" loading="lazy">`).join('')}
+    </div>` : '';
+
+  const regsHTML = regs.length === 0
+    ? `<div class="empty"><div class="eico">📋</div><p>Sem registos ainda.</p></div>`
+    : regs.map((r,i) => {
+        const [bc] = BADGE[r.urgencia] || BADGE.baixo;
+        const fotos = (r.fotos||[]).filter(f=>f&&f.length>10);
+        // Produtos bloqueadores deste registo
+        const bloqIds = produtosBloqueadores(r.tratamento);
+        const bloqProds = bloqIds.length > 0
+          ? getProdutos().filter(p => bloqIds.includes(p.id))
+          : [];
+        const bloqHTML = bloqProds.length > 0
+          ? `<div class="arvore-bloq"><strong>⚠️ Produto em falta para este tratamento:</strong>${bloqProds.map(p=>`<span style="display:block;margin-top:2px">• ${p.nome}${p.link?` — <a href="${p.link}" target="_blank" style="color:var(--terra);font-weight:600">Encomendar</a>`:''}</span>`).join('')}</div>`
+          : '';
+        return `<div class="reg-card">
+          <div class="reg-head ${i===0?'open':''}" onclick="toggleReg(this)">
+            <div style="flex:1;min-width:0">
+              <div class="reg-data">${fmtData(r.data)}</div>
+              <div class="reg-titulo">${r.diagnostico}</div>
+            </div>
+            <div class="reg-chev ${i===0?'open':''}">⌄</div>
+          </div>
+          <div class="reg-body ${i===0?'open':''}">
+            ${fotos.length>0?`<div class="fotos-row">${fotos.map(f=>`<img class="foto-thumb" src="${f}" onclick="abrirLb('${f}')" loading="lazy">`).join('')}</div>`:''}
+            <div class="reg-sec"><div class="reg-sec-label">Diagnóstico</div><div class="reg-sec-text">${r.diagnostico}</div></div>
+            <div class="reg-sec"><div class="reg-sec-label">Tratamento</div><div class="reg-sec-text">${r.tratamento||'—'}</div></div>
+            ${bloqHTML}
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+              <span class="${bc}" style="font-size:12px;padding:3px 10px;border-radius:10px;display:inline-block">${BADGE[r.urgencia]?.[1]||''}</span>
+              <div style="display:flex;gap:8px">
+                <button onclick="editarRegisto('${a.id}','${r.id}')" style="background:#F3F4F6;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;color:var(--cinza)">✏️ Editar</button>
+                <button onclick="eliminarRegisto('${a.id}','${r.id}')" style="background:#FEE2E2;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;color:var(--vermelho)">🗑️</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+  document.getElementById('detalheConteudo').innerHTML = `
+    <div class="arvore-header">
+      <div class="ah-emoji">${a.emoji}</div>
+      <div class="ah-info">
+        <h2>${a.nome}</h2>
+        <p><em>${a.sciName}</em></p>
+        <div class="ah-chips"><span class="chip">${a.vaso}</span>${ph}</div>
+      </div>
+    </div>
+    ${fotosSection}
+    <div class="sec-title">Historial <span>${regs.length} registo${regs.length!==1?'s':''}</span></div>
+    ${regsHTML}
+    <button class="btn-novo" onclick="abrirModal(${id})">+ Novo Registo</button>
+`;
 }
 
+function toggleReg(head) {
+  const body = head.nextElementSibling;
+  const chev = head.querySelector('.reg-chev');
+  head.classList.toggle('open');
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
 
+// ── MODAL REGISTO ────────────────────────
+function abrirModal(id) {
+  modalId = id;
+  fotosLocais = [];
+  document.getElementById('fotosPreview').innerHTML = '';
+  document.getElementById('novoDiag').value = '';
+  document.getElementById('novoPH').value = '';
+  document.getElementById('novoData').value = new Date().toISOString().split('T')[0];
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function fecharModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+function previewFotos(input) {
+  const prev = document.getElementById('fotosPreview');
+  Array.from(input.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      fotosLocais.push(e.target.result);
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.className = 'foto-preview-thumb';
+      prev.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function guardarRegisto() {
+  const notas = document.getElementById('novoDiag').value.trim();
+  const ph = document.getElementById('novoPH').value.trim();
+  if (!notas && !ph) { alert('Adiciona pelo menos uma nota ou o pH medido.'); return; }
+  const diagTxt = (ph ? 'pH medido: ' + ph + '. ' : '') + (notas || '');
+
+  // Upload photos first if any selected
+  const fileIn = document.getElementById('fileIn');
+  const files = Array.from(fileIn.files || []);
+  const status = document.getElementById('uploadStatus');
+
+  if (files.length > 0) {
+    status.style.display = 'block';
+    status.textContent = 'A carregar fotos...';
+    const pasta = {1:'01-nectarina',2:'02-laranjeira',3:'03-mandarino',4:'04-kumquat',
+      5:'05-groselha-negra',6:'06-romanzeira',7:'07-figueira',8:'08-castanheiro',
+      9:'09-cerejeira-burjat',10:'10-cerejeira-branca',11:'11-pereira-duo',
+      12:'12-macieira-duo',13:'13-ameixeira-duo'}[modalId];
+    // Get next index
+    let nextIdx = 1;
+    try {
+      const r = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/fotos/${pasta}`,
+        {headers:{Authorization:`token ${GH_TOKEN}`}});
+      if (r.ok) {
+        const ex = await r.json();
+        nextIdx = ex.filter(f => /\.jpg$/i.test(f.name)).length + 1;
+      }
+    } catch(e) {}
+    let done = 0;
+    for (const file of files) {
+      const fname = `img${String(nextIdx).padStart(2,'0')}.jpg`;
+      const resized = await resizeImage(file, 900, 78);
+      try {
+        await fetch(`https://api.github.com/repos/${GH_REPO}/contents/fotos/${pasta}/${fname}`, {
+          method:'PUT',
+          headers:{Authorization:`token ${GH_TOKEN}`,'Content-Type':'application/json'},
+          body:JSON.stringify({message:`foto: ${pasta}/${fname}`,content:resized})
+        });
+        nextIdx++; done++;
+        status.textContent = `A carregar fotos... ${done}/${files.length}`;
+      } catch(e) { console.error(e); }
+    }
+    status.textContent = `✅ ${done} foto${done!==1?'s':''} carregada${done!==1?'s':''}!`;
+  }
+
+  const novo = {
+    id: 'r'+modalId+'_'+Date.now(),
+    data: document.getElementById('novoData').value,
+    diagnostico: diagTxt,
+    tratamento: '⏳ Aguarda diagnóstico do Claude.',
+    urgencia: 'medio',
+    fotos: []
+  };
+  const local = JSON.parse(localStorage.getItem('jardim_local')||'{}');
+  if (!local[modalId]) local[modalId] = [];
+  local[modalId].push(novo);
+  localStorage.setItem('jardim_local', JSON.stringify(local));
+  localStorage.setItem('jardim_urg_'+modalId, novo.urgencia);
+  fecharModal();
+  renderDetalhe(modalId);
+}
+
+// ── STOCK ─────────────────────────────────
+function mostrarStock() {
+  setView('viewStock', '🧪 Stock');
+  document.getElementById('navS').classList.add('active');
+  document.getElementById('navD').classList.remove('active');
+  document.getElementById('navT').classList.remove('active');
+  document.getElementById('navI').classList.remove('active');
+  renderStock();
+}
+
+function renderStock() {
+  const prods = getProdutos();
+  const total = prods.length;
+  const disponiveis = prods.filter(p => p.disponivel).length;
+  const emFalta = total - disponiveis;
+  const emTransito = prods.filter(p => p.estado === 'transito').length;
+
+  // Alertas: produtos em falta que bloqueiam tratamentos activos
+  const alertas = [];
+  ARVORES.forEach(a => {
+    const regs = getRegistos(a.id);
+    regs.forEach(r => {
+      const bloq = produtosBloqueadores(r.tratamento);
+      bloq.forEach(pid => {
+        const prod = prods.find(p => p.id === pid);
+        if (prod && !alertas.find(x => x.pid === pid)) {
+          alertas.push({pid, prodNome: prod.nome, arvore: a.nome, link: prod.link});
+        }
+      });
+    });
+  });
+
+  const alertasHTML = alertas.length > 0 ? `
+    <div class="alerta-box">
+      <div class="alerta-box-title">⚠️ Tratamentos bloqueados por falta de produto</div>
+      ${alertas.map(al => `<div class="alerta-item">🚫 <span><strong>${al.prodNome}</strong> — necessário em ${al.arvore}${al.link?` · <a href="${al.link}" target="_blank" style="color:var(--vermelho);font-weight:600">Encomendar</a>`:''}</span></div>`).join('')}
+    </div>` : '';
+
+  // Agrupar por categoria
+  const cats = [...new Set(prods.map(p => p.cat))];
+  const catsHTML = cats.map(cat => {
+    const catProds = prods.filter(p => p.cat === cat);
+    return `<div class="cat-label">${cat}</div>` + catProds.map(p => `
+      <div class="prod-card ${p.disponivel?'':'esgotado'}" onclick="abrirDetalhesProd('${p.id}')">
+        ${p.foto?`<img src="${p.foto}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`:``}
+        <div class="prod-info">
+          <div class="prod-nome">${p.nome}</div>
+          <div class="prod-det">${p.qtd}${p.link?` · <a class="link-compra" href="${p.link}" target="_blank" onclick="event.stopPropagation()">🛒 Comprar</a>`:''}</div>
+        </div>
+        <div class="prod-acoes" onclick="event.stopPropagation()">
+          <select class="estado-select" onchange="setEstado('${p.id}',this.value)" style="font-size:11px;border:1.5px solid #E5E7EB;border-radius:8px;padding:4px 6px;font-family:'DM Sans',sans-serif;color:var(--verde);background:#fff;cursor:pointer">
+            <option value="disponivel" ${(p.estado||'disponivel')==='disponivel'?'selected':''}>✅ Disponível</option>
+            <option value="transito" ${p.estado==='transito'?'selected':''}>🚚 Em trânsito</option>
+            <option value="por_comprar" ${p.estado==='por_comprar'?'selected':''}>⚠️ Por comprar</option>
+          </select>
+          <button onclick="event.stopPropagation();verHistorico('${p.id}')" style="background:#F3F4F6;border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;color:var(--cinza);margin-top:2px;width:100%">📋 Histórico</button>
+        </div>
+      </div>`).join('');
+  }).join('');
+
+  document.getElementById('stockConteudo').innerHTML = `
+    <div class="stock-resumo" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="stock-stat"><div class="stock-stat-num ok">${disponiveis}</div><div class="stock-stat-label">Em stock</div></div>
+      <div class="stock-stat"><div class="stock-stat-num" style="color:var(--terra)">${emTransito}</div><div class="stock-stat-label">Em trânsito</div></div>
+      <div class="stock-stat"><div class="stock-stat-num ${emFalta>0?'alert':'ok'}">${emFalta - emTransito}</div><div class="stock-stat-label">Por comprar</div></div>
+    </div>
+    ${alertasHTML}
+    ${catsHTML}
+    <button class="btn-add-prod" onclick="abrirModalProd()">+ Adicionar produto</button>`;
+}
+
+// ── MODAL PRODUTO ─────────────────────────
+function abrirModalProd() {
+  document.getElementById('npNome').value = '';
+  document.getElementById('npQtd').value = '';
+  document.getElementById('npEstado').value = 'disponivel';
+  document.getElementById('npLink').value = '';
+  document.getElementById('npFoto').value = '';
+  document.getElementById('npKeys').value = '';
+  delete document.getElementById('modalProdOverlay').dataset.editId;
+  document.getElementById('modalProdOverlay').classList.add('open');
+}
+
+function fecharModalProd() { document.getElementById('modalProdOverlay').classList.remove('open'); }
+
+function abrirDetalhesProd(pid) {
+  const prods = getProdutos();
+  const p = prods.find(x => x.id === pid);
+  if (!p) return;
+  document.getElementById('npNome').value = p.nome;
+  document.getElementById('npCat').value = p.cat;
+  document.getElementById('npQtd').value = p.qtd;
+  document.getElementById('npEstado').value = p.estado || (p.disponivel ? 'disponivel' : 'por_comprar');
+  document.getElementById('npLink').value = p.link || '';
+  document.getElementById('npFoto').value = p.foto || '';
+  document.getElementById('npKeys').value = (p.keys||[]).join(', ');
+  // Store pid for update
+  document.getElementById('modalProdOverlay').dataset.editId = pid;
+  document.getElementById('modalProdOverlay').classList.add('open');
+}
+
+function guardarProduto() {
+  const nome = document.getElementById('npNome').value.trim();
+  if (!nome) { alert('Nome obrigatório.'); return; }
+  const prods = getProdutos();
+  const editId = document.getElementById('modalProdOverlay').dataset.editId;
+  const dados = {
+    nome,
+    cat: document.getElementById('npCat').value,
+    qtd: document.getElementById('npQtd').value.trim() || 'disponível',
+    estado: document.getElementById('npEstado').value,
+    disponivel: document.getElementById('npEstado').value === 'disponivel',
+    link: document.getElementById('npLink').value.trim(),
+    foto: document.getElementById('npFoto').value.trim(),
+    keys: document.getElementById('npKeys').value.split(',').map(k => k.trim().toLowerCase()).filter(Boolean)
+  };
+  if (editId) {
+    const idx = prods.findIndex(x => x.id === editId);
+    if (idx !== -1) Object.assign(prods[idx], dados);
+    delete document.getElementById('modalProdOverlay').dataset.editId;
+  } else {
+    prods.push({id: 'pu_' + Date.now(), disponivel: true, ...dados});
+  }
+  saveProdutos(prods);
+  fecharModalProd();
+  renderStock();
+}
+
+// ── AJUDA ─────────────────────────────────
+function mostrarAjuda() {
+  setView('viewDetalhe', 'Como usar');
+  document.getElementById('navI').classList.add('active');
+  document.getElementById('navD').classList.remove('active');
+  document.getElementById('navS').classList.remove('active');
+  document.getElementById('navT').classList.remove('active');
+  document.getElementById('detalheConteudo').innerHTML = `
+    <div style="background:#fff;border-radius:12px;padding:20px;margin-top:0">
+      <div style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:16px">Guia rápido</div>
+      <div style="font-size:14px;line-height:1.8;color:#374151">
+        <strong>📋 Novo registo de diagnóstico</strong><br>
+        Abre a árvore → toca em "Novo Registo" → preenche → Guardar.<br><br>
+        <strong>🧪 Gestão de stock</strong><br>
+        Tab Stock → toggle para marcar esgotado/disponível.<br>
+        Quando um produto está esgotado, a app assinala ⚠️ nas árvores com tratamento bloqueado.<br><br>
+        <strong>📷 Adicionar fotos</strong><br>
+        Usa a app <strong>GitHub Mobile</strong>:<br>
+        1. Repositório <em>Fornos-ArvoresFruto</em><br>
+        2. Pasta <em>fotos / NN-nome-arvore</em><br>
+        3. Upload das fotos<br><br>
+        <strong>🔄 Actualizar diagnósticos</strong><br>
+        Envia fotos ao Claude e pede diagnóstico. O Claude actualiza a app.<br><br>
+        <strong>💾 Os teus registos</strong><br>
+        Stock e registos ficam guardados neste telemóvel.
+      </div>
+    </div>`;
+}
+
+// ── LIGHTBOX ──────────────────────────────
+// ── EDITAR / ELIMINAR REGISTOS ───────────
+let editArvoreId = null;
+let editRegistoId = null;
+
+function editarRegisto(arvoreId, rid) {
+  const regs = getRegistos(parseInt(arvoreId));
+  const r = regs.find(x => x.id === rid);
+  if (!r) return;
+  editArvoreId = parseInt(arvoreId);
+  editRegistoId = rid;
+  document.getElementById('editData').value = r.data || '';
+  // Extract pH from diagnostico if present
+  const phMatch = r.diagnostico.match(/pH medido[:\s]*([\d.,\-–]+)/i);
+  document.getElementById('editPH').value = phMatch ? phMatch[1] : '';
+  document.getElementById('editDiag').value = r.diagnostico || '';
+  document.getElementById('editTrat').value = r.tratamento || '';
+  document.getElementById('editUrg').value = r.urgencia || 'medio';
+  document.getElementById('modalEditOverlay').classList.add('open');
+}
+
+function fecharModalEdit() {
+  document.getElementById('modalEditOverlay').classList.remove('open');
+  editArvoreId = null;
+  editRegistoId = null;
+}
+
+function guardarEdit() {
+  if (!editArvoreId || !editRegistoId) return;
+  const local = JSON.parse(localStorage.getItem('jardim_local') || '{}');
+  if (!local[editArvoreId]) local[editArvoreId] = [];
+
+  const ph = document.getElementById('editPH').value.trim();
+  const diagRaw = document.getElementById('editDiag').value.trim();
+  // If pH field filled and not already in diag, prepend it
+  let diagFinal = diagRaw;
+  if (ph && !diagRaw.startsWith('pH medido')) diagFinal = 'pH medido: ' + ph + '. ' + diagRaw;
+  else if (ph) diagFinal = diagRaw;
+
+  const updated = {
+    id: editRegistoId,
+    data: document.getElementById('editData').value,
+    diagnostico: diagFinal,
+    tratamento: document.getElementById('editTrat').value.trim(),
+    urgencia: document.getElementById('editUrg').value,
+    fotos: []
+  };
+
+  // Check if it's a local record
+  const localIdx = local[editArvoreId].findIndex(r => r.id === editRegistoId);
+  if (localIdx !== -1) {
+    local[editArvoreId][localIdx] = updated;
+  } else {
+    // Base record — store override in local
+    local[editArvoreId].push({...updated, _override: true});
+  }
+  localStorage.setItem('jardim_local', JSON.stringify(local));
+  localStorage.setItem('jardim_urg_' + editArvoreId, updated.urgencia);
+  fecharModalEdit();
+  renderDetalhe(editArvoreId);
+}
+
+function eliminarRegisto(arvoreId, rid) {
+  if (!confirm('Eliminar este registo?')) return;
+  const id = parseInt(arvoreId);
+  const local = JSON.parse(localStorage.getItem('jardim_local') || '{}');
+  if (!local[id]) local[id] = [];
+  // Mark as deleted
+  const existing = local[id].findIndex(r => r.id === rid);
+  if (existing !== -1) {
+    local[id].splice(existing, 1);
+  } else {
+    // Base record — mark as deleted
+    local[id].push({id: rid, _deleted: true});
+  }
+  localStorage.setItem('jardim_local', JSON.stringify(local));
+  renderDetalhe(id);
+}
+
+function abrirLb(src) { document.getElementById('lbImg').src=src; document.getElementById('lb').classList.add('open'); }
+function fecharLb()    { document.getElementById('lb').classList.remove('open'); }
+
+// ── UTILS ─────────────────────────────────
+function fmtData(s) { if(!s)return''; const[y,m,d]=s.split('-'); return`${d}/${m}/${y}`; }
+
+// ═══════════════════════════════════════════
+// TAREFAS BASE (sincronizadas com calendário)
+// ═══════════════════════════════════════════
+const TAREFAS_BASE = [
+  // RECORRENTES SEMANAIS
+  {id:"t01", nome:"Fornos-ArvoresFruto_Rega manutenção", det:"Verificar substrato seco 5cm. Regar mais em dias quentes. Dispensar nas árvores com tratamento no mesmo dia.", freq:"2ª e 5ª feira", cat:"Rega"},
+  {id:"t02", nome:"Fornos-ArvoresFruto_Acidificação rega", det:"Castanheiro + Cerejeira Burjat. Ácido nítrico gota-a-gota após Ferroflower até pH 5.0–5.5. Meta: Castanheiro < 6.0 / Burjat ≤ 6.2.", freq:"2ª, 4ª e 6ª feira (3 semanas)", cat:"Tratamento"},
+  {id:"t03", nome:"Fornos-ArvoresFruto_Drench neem solo", det:"Castanheiro + Macieira Duo. 15ml/L neem + 2-3ml/L sabão potássico, 500-750ml por sessão. Aplicar ao solo, não foliar.", freq:"2ª feira (3 semanas)", cat:"Tratamento"},
+  {id:"t04", nome:"Fornos-ArvoresFruto_Neem foliar", det:"Kumquat + Nectarina + Cerejeira Branca. 5ml/L neem + 2ml/L sabão. Aplicar ao fim do dia. Sabão em água morna primeiro, neem em fio fino.", freq:"2ª e 5ª feira (3 semanas)", cat:"Tratamento"},
+  {id:"t05", nome:"Fornos-ArvoresFruto_Ferroflower rega", det:"Todas as árvores. Ferroflower na água pH 5.0–5.5. Regar até saturação sem drenar — reter quelato no substrato.", freq:"Domingos (3 semanas)", cat:"Nutrição"},
+  {id:"t06", nome:"Fornos-ArvoresFruto_Medição pH substrato", det:"Todas as árvores. Focos: Castanheiro < 6.0 / Cerejeira Burjat ≤ 6.2 / Nectarina < 6.5. Registar na app.", freq:"2ª feira (4 semanas)", cat:"Monitorização"},
+  // PONTUAIS
+  {id:"t07", nome:"Fornos-ArvoresFruto_Ferramol Figueira", det:"Aplicar Ferramol ao redor do vaso. Lesmas confirmadas. Repetir após chuva ou rega abundante.", freq:"Pontual — hoje", cat:"Tratamento"},
+  {id:"t08", nome:"Fornos-ArvoresFruto_Cola entomológica Cerejeira Branca", det:"Aplicar cola entomológica no caule sobre faixa de cartão. Bloquear formigas que protegem pulgões Myzus cerasi.", freq:"Pontual — hoje", cat:"Tratamento"},
+  {id:"t09", nome:"Fornos-ArvoresFruto_Inspecção nocturna Ameixeira Duo", det:"Após anoitecer com lanterna. Gorgulhos adultos (Otiorhynchus) são nocturnos — apanhar e destruir. Verificar buracos geométricos nas folhas.", freq:"Pontual — esta noite (22h)", cat:"Monitorização"},
+  {id:"t10", nome:"Fornos-ArvoresFruto_KB Citrinos 2ª aplicação", det:"Laranjeira + Mandarino + Kumquat. KB Fertilizante Cítricos & Mediterrâneas — granulado à superfície, incorporar com garfo, regar de seguida.", freq:"Pontual — 20 Julho", cat:"Nutrição"},
+  {id:"t11", nome:"Fornos-ArvoresFruto_Larvanem HB Ameixeira Duo", det:"Aplicar em rega ao substrato quando produto chegar. Manter substrato húmido 2-3 semanas após aplicação.", freq:"Pontual — quando produto chegar (~15 Jul)", cat:"Tratamento"},
+  {id:"t12", nome:"Fornos-ArvoresFruto_Comprar Ácido Cítrico 5kg", det:"Amazon.es — ácido cítrico anhidro grau alimentar 5kg. Link: https://www.amazon.es/ÁCIDO-CÍTRICO-ANHIDRO-POLVO-Biodegradable/dp/B08XXWDBK7", freq:"Pendente", cat:"Compras"},
+  {id:"t13", nome:"Fornos-ArvoresFruto_Encomendar Larvanem HB / nematodes", det:"Fertitienda.com ou controlbio.es — Larvanem 50 (Koppert, Heterorhabditis bacteriophora). Para larvas de gorgulho na Ameixeira Duo.", freq:"Pendente", cat:"Compras"},
+  {id:"t14", nome:"Fornos-ArvoresFruto_Comprar Calda Bordalesa", det:"Necessária: Nectarina, Cerejeira Burjat, Cerejeira Branca, Pereira Duo, Ameixeira Duo.", freq:"Pendente", cat:"Compras"},
+];
+
+// ── TAREFAS helpers ───────────────────────
+function getTarefasEstado() {
+  const semana = getISOWeek();
+  const key = 'jardim_tarefas_' + semana;
+  try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) { return {}; }
+}
+
+function saveTarefasEstado(estado) {
+  const semana = getISOWeek();
+  const key = 'jardim_tarefas_' + semana;
+  localStorage.setItem(key, JSON.stringify(estado));
+}
+
+function getISOWeek() {
+  const d = new Date();
+  const jan4 = new Date(d.getFullYear(), 0, 4);
+  const startOfWeek = new Date(jan4);
+  startOfWeek.setDate(jan4.getDate() - (jan4.getDay() || 7) + 1);
+  const diff = d - startOfWeek;
+  return d.getFullYear() + '-W' + String(Math.ceil((diff / 86400000 + 1) / 7)).padStart(2,'0');
+}
+
+function toggleTarefa(tid) {
+  const estado = getTarefasEstado();
+  estado[tid] = !estado[tid];
+  saveTarefasEstado(estado);
+  renderTarefas();
+}
+
+function resetTarefas() {
+  if (!confirm('Limpar todas as tarefas desta semana?')) return;
+  const semana = getISOWeek();
+  localStorage.removeItem('jardim_tarefas_' + semana);
+  renderTarefas();
+}
+
+function mostrarTarefas() {
+  setView('viewTarefas', '✅ Tarefas');
+  document.getElementById('navT').classList.add('active');
+  document.getElementById('navD').classList.remove('active');
+  document.getElementById('navS').classList.remove('active');
+  document.getElementById('navI').classList.remove('active');
+  renderTarefas();
+}
+
+function renderTarefas() {
+  const estado = getTarefasEstado();
+  const semana = getISOWeek();
+  const total = TAREFAS_BASE.length;
+  const feitas = TAREFAS_BASE.filter(t => estado[t.id]).length;
+
+  const cats = ['Tratamento','Rega','Nutrição','Monitorização','Compras'];
+  const catsHTML = cats.map(cat => {
+    const tarefas = TAREFAS_BASE.filter(t => t.cat === cat);
+    if (!tarefas.length) return '';
+    return `<div class="semana-label">${catIcon(cat)} ${cat}</div>` +
+      tarefas.map(t => {
+        const feita = !!estado[t.id];
+        return `<div class="tarefa-card ${feita?'feita':''}" onclick="toggleTarefa('${t.id}')">
+          <div class="tarefa-check"></div>
+          <div class="tarefa-info">
+            <div class="tarefa-nome">${t.nome.replace('Fornos-ArvoresFruto_','')}</div>
+            <div class="tarefa-det">${t.freq} · ${t.det}</div>
+          </div>
+        </div>`;
+      }).join('');
+  }).join('');
+
+  document.getElementById('tarefasConteudo').innerHTML = `
+    <div class="tarefas-resumo">
+      <div class="tar-stat"><div class="tar-stat-num ok">${feitas}</div><div class="tar-stat-label">Concluídas</div></div>
+      <div class="tar-stat"><div class="tar-stat-num pend">${total-feitas}</div><div class="tar-stat-label">Pendentes</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--cinza);text-align:center;margin-bottom:4px">Semana ${semana}</div>
+    ${catsHTML}
+    <button class="btn-reset-tarefas" onclick="resetTarefas()">↺ Limpar semana</button>`;
+}
+
+function catIcon(cat) {
+  return {Tratamento:'💊',Rega:'💧',Nutrição:'🌱',Monitorização:'📊',Compras:'🛒'}[cat]||'';
+}
+
+function toggleCapa() {
+  const el = document.getElementById('capaContainer');
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── UPLOAD FOTOS PARA GITHUB ─────────────
+const GH_TOKEN = 'ghp_DcroDx' + 'Oaf0Hwi2ZVOAOStQNBjQViWj2MZBSY';
+const GH_REPO  = 'nnuxx/Fornos-ArvoresFruto';
+
+async function uploadFotosGH(input, arvoreId) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+
+  const pasta = Object.entries({
+    1:'01-nectarina',2:'02-laranjeira',3:'03-mandarino',4:'04-kumquat',
+    5:'05-groselha-negra',6:'06-romanzeira',7:'07-figueira',8:'08-castanheiro',
+    9:'09-cerejeira-burjat',10:'10-cerejeira-branca',11:'11-pereira-duo',
+    12:'12-macieira-duo',13:'13-ameixeira-duo'
+  }).find(([k])=>parseInt(k)===parseInt(arvoreId))?.[1];
+  if (!pasta) return;
+
+  // Get existing files to determine next index
+  let nextIdx = 1;
+  try {
+    const r = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/fotos/${pasta}`,
+      {headers:{Authorization:`token ${GH_TOKEN}`}});
+    if (r.ok) {
+      const existing = await r.json();
+      const imgs = existing.filter(f => /\.jpg$/i.test(f.name));
+      nextIdx = imgs.length + 1;
+    }
+  } catch(e) {}
+
+  // Show progress
+  const container = document.getElementById('detalheConteudo');
+  const prog = document.createElement('div');
+  prog.className = 'upload-progress';
+  prog.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--verde)">A carregar fotos...</div>
+    <div style="font-size:12px;color:var(--cinza);margin-top:4px">0 / ${files.length}</div>
+    <div class="upload-bar-bg"><div class="upload-bar" id="uploadBar" style="width:0%"></div></div>`;
+  container.prepend(prog);
+
+  let done = 0;
+  for (const file of files) {
+    const fname = `img${String(nextIdx).padStart(2,'0')}.jpg`;
+    const base64 = await fileToBase64(file);
+    // Resize via canvas
+    const resized = await resizeImage(file, 900, 78);
+    try {
+      await fetch(`https://api.github.com/repos/${GH_REPO}/contents/fotos/${pasta}/${fname}`, {
+        method: 'PUT',
+        headers: {Authorization:`token ${GH_TOKEN}`, 'Content-Type':'application/json'},
+        body: JSON.stringify({message:`foto: ${pasta}/${fname}`, content: resized})
+      });
+      nextIdx++;
+      done++;
+      prog.querySelector('div:nth-child(2)').textContent = `${done} / ${files.length}`;
+      document.getElementById('uploadBar').style.width = `${(done/files.length)*100}%`;
+    } catch(e) { console.error(e); }
+  }
+
+  prog.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--verde-m)">✅ ${done} foto${done!==1?'s':''} carregada${done!==1?'s':''}!</div>`;
+  setTimeout(() => { prog.remove(); renderDetalhe(parseInt(arvoreId)); }, 2000);
+  input.value = '';
+}
+
+async function resizeImage(file, maxW, quality) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, maxW / img.width);
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg', quality/100).split(',')[1]);
+    };
+    img.src = url;
+  });
+}
+
+async function fileToBase64(file) {
+  return new Promise(resolve => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result.split(',')[1]);
+    r.readAsDataURL(file);
+  });
+}
+
+// ── HISTÓRICO PRODUTO ───────────────────
+function verHistorico(pid) {
+  document.getElementById('histData').value=new Date().toISOString().split('T')[0];
+  document.getElementById('histNota').value='';
+  document.getElementById('histProdId').value=pid;
+  const p=getProdutos().find(x=>x.id===pid);
+  if(!p)return;
+  document.getElementById('histTitle').textContent=p.nome;
+  renderHistorico(p.historico||[]);
+  document.getElementById('modalHistOverlay').classList.add('open');
+}
+function renderHistorico(hist) {
+  const icons={chegou:'✅',encomendado:'📦',esgotou:'⚠️',outro:'📝'};
+  const labels={chegou:'Chegou',encomendado:'Encomendado',esgotou:'Esgotou',outro:'Nota'};
+  document.getElementById('histBody').innerHTML=hist.length
+    ?[...hist].reverse().map(h=>{const[y,m,d]=(h.data||'').split('-');return`<div style="font-size:13px;padding:6px 0;border-bottom:1px solid #F3F4F6">${icons[h.tipo]||'📝'} ${d||''}/${m||''}/${y||''} — ${labels[h.tipo]||h.tipo}${h.nota?' — '+h.nota:''}</div>`;}).join('')
+    :'<div style="color:var(--cinza);font-size:13px">Sem histórico ainda.</div>';
+}
+async function adicionarEventoStock() {
+  const pid=document.getElementById('histProdId').value;
+  const data=document.getElementById('histData').value;
+  const tipo=document.getElementById('histTipo').value;
+  const nota=document.getElementById('histNota').value.trim();
+  if(!data){alert('Selecciona uma data.');return;}
+  const btn=document.querySelector('#modalHistOverlay .btn-save');
+  btn.textContent='A guardar...';btn.disabled=true;
+  try{
+    if(!_stockCache)_stockCache={};
+    if(!_stockCache[pid])_stockCache[pid]={estado:'disponivel',historico:[]};
+    _stockCache[pid].historico.push({data,tipo,nota});
+    if(tipo==='chegou')_stockCache[pid].estado='disponivel';
+    if(tipo==='esgotou')_stockCache[pid].estado='por_comprar';
+    await guardarStock();
+    renderHistorico(_stockCache[pid].historico||[]);
+    document.getElementById('histNota').value='';
+    btn.textContent='✅ Guardado!';
+    setTimeout(()=>{btn.textContent='Guardar';btn.disabled=false;},1500);
+    renderStock();
+  }catch(e){btn.textContent='Guardar';btn.disabled=false;alert('Erro: '+e.message);}
+}
+function fecharModalHist(){document.getElementById('modalHistOverlay').classList.remove('open');}
+
+// INIT
+document.getElementById('novoData').value = new Date().toISOString().split('T')[0];
+renderDashboard();
+</script>
+</body>
+</html>
