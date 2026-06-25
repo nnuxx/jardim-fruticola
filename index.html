@@ -1061,9 +1061,10 @@ function toggleCapa() {
 
 // ═══════════════════════════════════════════
 function fazerLogin() {
-  // Trigger CF Access login for /api/* then back to app
+  // Go to /api/_login — CF Access will intercept and show login
+  // After login, Access redirects back here
   const back = encodeURIComponent(window.location.href);
-  window.location.href = '/api/stock';
+  window.location.href = '/api/_login?back=' + back;
 }
 
 // INIT — carrega todos os registos
