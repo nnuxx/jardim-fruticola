@@ -135,6 +135,7 @@ input[type="file"]{display:none;}
 <header>
   <button class="back-btn" id="backBtn" onclick="voltarDashboard()">←</button>
   <h1 id="headerTitle">🌿 Fornos-ArvoresFruto</h1>
+  <button id="loginBtn" onclick="fazerLogin()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap">🔐 Editar</button>
 </header>
 
 <div class="view active" id="viewDashboard">
@@ -295,8 +296,8 @@ async function api(method, path, body) {
   if (body) opts.body = JSON.stringify(body);
   const r = await fetch('/api' + path, opts);
   if (r.status === 401) {
-    // Redirect to Cloudflare Access login
-    window.location.href = 'https://fornos-arvoresfruto.pages.dev/api/stock';
+    const d = await r.json().catch(()=>({}));
+    mostrarToast('🔐 Login necessário — usa o botão Editar', '#C17F3B');
     throw new Error('Login necessário');
   }
   if (!r.ok) throw new Error(`API ${path}: ${r.status}`);
@@ -1052,6 +1053,11 @@ function toggleCapa() {
 }
 
 // ═══════════════════════════════════════════
+function fazerLogin() {
+  // Redirect to CF Access login for /api/* then back to app
+  window.location.href = '/api/stock?redirect=' + encodeURIComponent(window.location.href);
+}
+
 // INIT — carrega todos os registos
 // ═══════════════════════════════════════════
 document.getElementById('novoData').value = new Date().toISOString().split('T')[0];
